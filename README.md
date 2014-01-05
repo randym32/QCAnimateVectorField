@@ -6,6 +6,9 @@ A Quartz Composer Plugin that animates a vector field
 Demo
 ------
 
+[embed]
+http://youtu.be/rO18j0saUAY
+[/embed]
 < iframe title="YouTube video player" width="480" height="390" src="http://youtu.be/rO18j0saUAY" frameborder="0" allowfullscreen>< /iframe>
 
 Requirements
