@@ -80,13 +80,19 @@
 
 - (void)dealloc
 {
-    free(colorMap);
-    free(background);
-    free(textureMap);
-    gcl_free(seed);
+    if (colorMap)
+        free(colorMap);
+    if (background)
+        free(background);
+    if (textureMap)
+        free(textureMap);
+    if (seed)
+        gcl_free(seed);
     gcl_free(self.vectorField);
-    gcl_free(vertices);
-    free(hostVertices);
+    if (vertices)
+        gcl_free(vertices);
+    if (hostVertices)
+        free(hostVertices);
     // Finally, release your queue just as you would any GCD queue.    // 11
     dispatch_release(_queue);
 

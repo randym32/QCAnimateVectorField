@@ -251,11 +251,13 @@ kernel void gridBuild(
     // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table3-4.shtml
     // Continuous srcGrids have an extra column
     int rowOfs = (gridSize.x + (isContinuous?1:0)) * j;
+    
+    // HACK, I am shift the x origin by 90degrees; this assumes the origin, spacing, and size
     for (int i = 0; i < gridSize.x; i++, p++)
     {
         // Note: because the latitude decreases, the direction of the y component is flipped
         // I fix it here
-        srcGrid[rowOfs + i] = (float2)(uData[p], -vData[p]);
+        srcGrid[rowOfs + (i+180)%gridSize.x] = (float2)(uData[p], -vData[p]);
     }
     if (isContinuous)
     {
