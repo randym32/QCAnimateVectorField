@@ -131,12 +131,15 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
         position_t2= position2+ v;
         position_t2.x+=0.5f;
     }
-    if (  position_t.x < 0.0
-       || position_t.x>= numXBins)
+    if (  position_t.x < 0.0)
     {
-        // The particle is squished up against the meridian line.  Just get rid the particle
-        // It looks less weird that way.
-        m=0;
+        // The particle is squished up against the meridian line.
+        position.x = position_t.x = position_t2.x = position2.x = numXBins-0.6;
+    }
+    if (position_t.x>= numXBins)
+    {
+        // The particle is squished up against the meridian line.
+        position.x = position_t.x = position_t2.x = position2.x = 0.0;
     }
     if (position_t.y < 0.0)
     {
