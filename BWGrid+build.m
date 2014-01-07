@@ -59,8 +59,12 @@
     NSData* data = [NSData dataWithContentsOfFile: path];
     if (!data)
     {
-        //NSLog(@"no data?");
-        return false;
+        data = [NSData dataWithContentsOfURL: [NSURL URLWithString: path]];
+        if (!data)
+        {
+            //NSLog(@"no data?");
+            return false;
+        }
     }
 
     // Read the JSON file
@@ -69,6 +73,7 @@
                                                            error: &e];
     if (!jsonArray || e)
     {
+        NSLog(@"error, could not load: %@", e);
         return false;
     }
     [self start: jsonArray
@@ -119,7 +124,7 @@
     }
     if (!vary || !uary)
         return;
-    
+
     // Build the GCL local versions of the array
     cl_float* cl_uary = gcl_malloc(sizeof(*cl_uary)* count, uary, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     cl_float* cl_vary = gcl_malloc(sizeof(*cl_vary)* count, vary, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
@@ -170,6 +175,8 @@
                    );
     });
 
+    // We need to update the origing now, as we have rotated the view
+    origin.x += 90.0;
     if (isContinuous)
     {
         srcSize . x++;
