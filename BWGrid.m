@@ -88,7 +88,8 @@
         free(textureMap);
     if (seed)
         gcl_free(seed);
-    gcl_free(self.vectorField);
+    if (self.vectorField)
+        gcl_free(self.vectorField);
     if (vertices)
         gcl_free(vertices);
     if (hostVertices)
