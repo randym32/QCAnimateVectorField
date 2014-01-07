@@ -252,7 +252,7 @@ kernel void gridBuild(
     // Continuous srcGrids have an extra column
     int rowOfs = (gridSize.x + (isContinuous?1:0)) * j;
     
-    // HACK, I am shift the x origin by 90degrees; this assumes the origin, spacing, and size
+    // HACK, I am shift the x origin by 180degrees; this assumes the origin, spacing, and size
     for (int i = 0; i < gridSize.x; i++, p++)
     {
         // Note: because the latitude decreases, the direction of the y component is flipped
