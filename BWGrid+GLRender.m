@@ -101,6 +101,9 @@
     /* Setup OpenGL states */
     glGetIntegerv(GL_VIEWPORT, saveViewport);
     glViewport(0, 0, self.numXBins, self.numYBins);
+    // Enable clipping (aka scissor)
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(0, 0, self.numXBins, self.numYBins);
     glGetIntegerv(GL_MATRIX_MODE, &saveMode);
 
     glMatrixMode(GL_PROJECTION);
@@ -134,7 +137,6 @@
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-//    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);//_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 #endif
     
@@ -174,6 +176,7 @@
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(saveMode);
+    glDisable(GL_SCISSOR_TEST);
     glViewport(saveViewport[0], saveViewport[1], saveViewport[2], saveViewport[3]);
 }
 
@@ -197,6 +200,8 @@
     // The tutorial says we need filtering
     glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     
     // Configure the frame buffer
     // The texName is color attachment 0

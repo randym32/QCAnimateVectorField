@@ -114,12 +114,43 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
     // The left two are the key ones
     // Get the particle position
     float2 position = vertex[idx4]+dT*(vertex[idx4+1]-vertex[idx4]);
-    float2 position2 = (float2)(position.x+1.5f, position.y+1.5f);
     float m;
     float2 position_t, position_t2;
-    if (position.y >= numYBins || position.x >= numXBins)
+    float2 position2;
+    float dX=0;
+    if (position.x <= 0.0)
     {
-        m = 1e12;
+        // We wrapped around
+        float2 p = vertex[idx4+1];
+
+        position.x = numXBins-0.01;
+        // We could calculate the actual y position but this works better for now
+        position.y = (position.y+p.y)*0.5;
+        position2.x= numXBins+0.2;
+        position2.y= position.y+0.9;
+    }
+    else if (position.x >= numXBins)
+    {
+        float2 p = vertex[idx4+1];
+        position.x = 0.0;
+        // We could calculate the actual y position but this works better for now
+        position.y = (position.y+p.y)*0.5;
+        position2.x= 0.2;
+        position2.y= position.y+0.9;
+        dX = -0.5;
+    }
+    else
+    {
+        position2 = (float2)(position.x+1.0f, position.y+1.0f);
+    }
+
+    if (position.y >= numYBins || position.y < 0)
+    {
+        // The particle is moving too fast or too slow; get rid of it
+        position_t = particleRandomize(numXBins, numYBins, seed);
+        position_t2= position_t;
+        position = position_t;
+        position2= position_t;
     }
     else
     {
@@ -129,38 +160,20 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
 
         position_t = position + v;
         position_t2= position2+ v;
+        position.x += dX;
+
         position_t2.x+=0.5f;
+        
+        if (m <1.0)
+        {
+            // The particle is moving too fast or too slow; get rid of it
+            position_t = particleRandomize(numXBins, numYBins, seed);
+            position_t2= position_t;
+            position = position_t;
+            position2= position_t;
+        }
     }
-    if (  position_t.x < 0.0)
-    {
-        // The particle is squished up against the meridian line.
-        position.x = position_t.x = position_t2.x = position2.x = numXBins-0.6;
-    }
-    if (position_t.x>= numXBins)
-    {
-        // The particle is squished up against the meridian line.
-        position.x = position_t.x = position_t2.x = position2.x = 0.0;
-    }
-    if (position_t.y < 0.0)
-    {
-        position_t.y = 0;
-        position_t2.y = 0;
-    }
-    else if (position_t.y>= numYBins)
-    {
-        position_t.y = numYBins-1;
-        position_t2.y = numYBins-1;
-    }
-    if ( m>1e11 || m <4.0
-       )
-    {
-        // The particle is moving too fast or too slow; get rid of it
-        position_t = particleRandomize(numXBins, numYBins, seed);
-        position_t2= position_t;
-        position = position_t;
-        position2= position_t;
-        m=0.0;
-    }
+
     
     // Path from (x,y) to (xt,yt) is visible, so add this particle to the appropriate draw bucket.
     vertex[idx4]   = position;
