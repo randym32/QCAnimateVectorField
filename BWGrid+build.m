@@ -217,11 +217,11 @@
     self.vectorField = myVectorField;
     
     // Release the resources
-    gcl_free(srcField);
-    gcl_free(cl_uary);
-    gcl_free(cl_vary);
-    free(uary);
-    free(vary);
+    BW_gcl_free(srcField);
+    BW_gcl_free(cl_uary);
+    BW_gcl_free(cl_vary);
+    BW_free(uary);
+    BW_free(vary);
     
     // Randomize the position of the particles
     [self randomizeParticles: _numParticles];

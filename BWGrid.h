@@ -87,3 +87,15 @@
                            ;
 
 @end
+
+NS_INLINE void BW_free(void* x)
+{
+    if (x) free(x);
+}
+
+NS_INLINE void BW_gcl_free(void* x)
+{
+    if (x) gcl_free(x);
+}
+
+

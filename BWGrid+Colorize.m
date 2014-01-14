@@ -83,7 +83,7 @@
         gridColorize_kernel(&range, self.vectorField,
                             self.maxMagnitude, image);
         
-        gcl_free(image);
+        BW_gcl_free(image);
     });
 }
 

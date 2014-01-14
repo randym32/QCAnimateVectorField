@@ -61,7 +61,7 @@
     // Okay we have to allocate them them
     if (vertices)
     {
-        gcl_free(vertices);
+        BW_gcl_free(vertices);
     }
 
     // Allocate the array of particle positions
@@ -89,10 +89,7 @@
     vertices    = gcl_malloc(sizeof(*vertices)*_numAllocatedParticles*4, hostVertices, CL_MEM_READ_WRITE|CL_MEM_USE_HOST_PTR|CL_MEM_HOST_READ_ONLY);
     
     // Create the texture map vertices
-    if (textureMap)
-    {
-        free(textureMap);
-    }
+    BW_free(textureMap);
     textureMap = valloc(sizeof(float)*_numAllocatedParticles*2*4);
     for (int I = 0; I < _numAllocatedParticles*4*2;)
     {
@@ -106,10 +103,7 @@
         textureMap[I++] = 0;
     }
     
-    if (colorMap)
-    {
-        free(colorMap);
-    }
+    BW_free(colorMap);
     colorMap = valloc(sizeof(float*)*4*4*_numAllocatedParticles);
     // Randomize the new particles
     [self randomizeParticles: count];
