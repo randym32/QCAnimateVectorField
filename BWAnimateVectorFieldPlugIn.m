@@ -198,11 +198,7 @@ NSDictionary* attributesForPort = nil;
 	if(colorModel == kCGColorSpaceModelMonochrome)
         pixelFormat = QCPlugInPixelFormatI8;
 	else if(colorModel == kCGColorSpaceModelRGB)
-#if __BIG_ENDIAN__
-        pixelFormat = QCPlugInPixelFormatARGB8;
-#else
-        pixelFormat = QCPlugInPixelFormatBGRA8;
-#endif
+        pixelFormat = HostFormat;
     else
     {
         // Uknown color model;
@@ -321,8 +317,8 @@ NSDictionary* attributesForPort = nil;
 
     // Uppdate the anination
     [field animationStep];
-    GLuint texName = [field draw: cgl_ctx];
     // Render the contents
+    GLuint texName = [field draw: cgl_ctx];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     glDeleteFramebuffersEXT(1, &frameBuffer);
 
