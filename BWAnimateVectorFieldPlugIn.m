@@ -50,6 +50,62 @@ static void _TextureReleaseCallback(CGLContextObj cgl_ctx, GLuint name, void* in
 
 NSDictionary* attributesForPort = nil;
 
++ (void) initialize
+{
+    // Create the dictionary for the attributes
+    attributesForPort =
+    @{
+          // Port
+          @"inputWidth" :
+              @{
+                  // Key                           Value
+                  QCPortAttributeNameKey        : @"Image Width",
+                  QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:2048],
+                  QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:1440]
+                },
+          @"inputHeight":
+              @{
+                  QCPortAttributeNameKey        : @"Image Height",
+                  QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:2048],
+                  QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:1440]
+                },
+          @"inputNumParticles":
+              @{
+                  QCPortAttributeNameKey        : @"Number of Particles",
+                  QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:256000u],
+                  QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:32768]
+                },
+          @"inputVectorColor":
+              @{
+                  QCPortAttributeNameKey        : @"Color of vectors",
+                  QCPortAttributeDefaultValueKey: [NSColor colorWithCalibratedRed: 0.0
+                                                                            green: 1.0
+                                                                             blue: 0.5
+                                                                            alpha: 1.0]
+                },
+          @"inputJSONURL":
+              @{
+                  QCPortAttributeNameKey        : @"URL for JSON data",
+                  QCPortAttributeDefaultValueKey: @""
+                },
+          /*
+           @"inputStructure":
+           @{
+           QCPortAttributeNameKey        : @"Structure",
+           },*/
+          @"inputImage":
+              @{
+                  QCPortAttributeNameKey        : @"Image"
+                },
+          
+          @"outputImage":
+              @{
+                  QCPortAttributeNameKey        : @"Animated vector image",
+                }
+    };
+}
+
+    
 + (NSDictionary*) attributes
 {
 	/* Return the attributes of this plug-in */
@@ -60,61 +116,8 @@ NSDictionary* attributesForPort = nil;
 
 + (NSDictionary*) attributesForPropertyPortWithKey:(NSString*)key
 {
-    if (!attributesForPort)
-    {
-        // Create the dictionary for the attributes
-        attributesForPort =
-            @{
-                // Port
-                @"inputWidth" :
-                    @{
-                        // Key                           Value
-                        QCPortAttributeNameKey        : @"Image Width",
-                        QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:2048],
-                        QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:1440]
-                      },
-                @"inputHeight":
-                    @{
-                        QCPortAttributeNameKey        : @"Image Height",
-                        QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:2048],
-                        QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:720]
-                     },
-                @"inputNumParticles":
-                    @{
-                        QCPortAttributeNameKey        : @"Number of Particles",
-                        QCPortAttributeMaximumValueKey: [NSNumber numberWithUnsignedInteger:256000u],
-                        QCPortAttributeDefaultValueKey: [NSNumber numberWithUnsignedInteger:32768]
-                     },
-                @"inputVectorColor":
-                    @{
-                        QCPortAttributeNameKey        : @"Color of vectors",
-                        QCPortAttributeDefaultValueKey: [(id)CGColorCreateGenericRGB(0.0, 1.0, 0.50, 1.0) autorelease]
-                     },
-                @"inputJSONURL":
-                    @{
-                        QCPortAttributeNameKey        : @"URL for JSON data",
-                        QCPortAttributeDefaultValueKey: @""
-                     },
-                /*
-                @"inputStructure":
-                    @{
-                        QCPortAttributeNameKey        : @"Structure",
-                    },*/
-                @"inputImage":
-                    @{
-                        QCPortAttributeNameKey        : @"Image"
-                    },
-                
-                @"outputImage":
-                    @{
-                        QCPortAttributeNameKey        : @"Animated vector image",
-                     }
-          };
-    }
 	/* Return the attributes for the plug-in property ports */
     return attributesForPort[key];
-	
-	return nil;
 }
 
 + (QCPlugInExecutionMode) executionMode
@@ -134,6 +137,7 @@ NSDictionary* attributesForPort = nil;
 
 @implementation BWAnimateVectorFieldPlugin (Execution)
 
+
 - (id) init
 {
     /* When plug-in is initialized. Initialized our array that will keep track or active plug-in controllers */
@@ -145,13 +149,6 @@ NSDictionary* attributesForPort = nil;
     return self;
 }
 
-- (void) dealloc
-{
-    [field  release];
-    [super dealloc];
-}
-
-
 /** This is used to load the data file from the given URL
     @param url    The URL for data file
     @param width  The target width of the data grid
@@ -162,7 +159,6 @@ NSDictionary* attributesForPort = nil;
                height: (int) height
 {
     // releasing old field
-    [field release];
     field = nil;
     if (!url)
     {
@@ -176,10 +172,9 @@ NSDictionary* attributesForPort = nil;
     // loading data file
     if (![field loadJSON: url
                 // scale for wind velocity (completely arbitrary--this value looks nice)
-          velocityScale: width / (5192.0f)
+          velocityScale: width / (3996.0f)
      ])
     {
-        [field release];
         field = nil;
     }
     
@@ -210,7 +205,7 @@ NSDictionary* attributesForPort = nil;
             // Load the data for the file
             [self loadDataFile: self.inputJSONURL
                          width: 1440
-                        height: 720];
+                        height: 1440];
             [field colorize:NULL];
             [field createTexture: self.inputVectorColor];
         }
@@ -274,7 +269,6 @@ NSDictionary* attributesForPort = nil;
        || [self didValueForInputKeyChange:@"inputImage"]
         )
     {
-        [field release];
         field = nil;
     }
 

@@ -36,14 +36,24 @@
 {
     if (!self.vectorField)
         return;
-    
+
+    // Free the background
+    BW_free(background);
+    background = NULL;
     if (srcBitmap)
     {
+        // Create a buffer for the background image
+        background = valloc(4*self.numXBins*self.numYBins);
+        
         // Copy the inage from given source bitmap
         memcpy(background, srcBitmap, 4*self.numXBins*self.numYBins);
+        // I no longer color the rest of the background
+        return;
     }
     else
     {
+        // I no longer color the rest of the background
+        return;
         // No source bitmap, just zero it
         memset(background, 0, 4*self.numXBins*self.numYBins);
     }
@@ -79,7 +89,7 @@
         cl_uchar4* image = gcl_malloc(sizeof(cl_uchar4)*self.numXBins*self.numYBins, background, CL_MEM_READ_WRITE | CL_MEM_USE_HOST_PTR);
         
         // Perform the colorization
-        self.maxMagnitude = 20.0*1440.0/self.numXBins;
+        self.maxMagnitude = 19.0*1440.0/self.numXBins;
         gridColorize_kernel(&range, self.vectorField,
                             self.maxMagnitude, image);
         

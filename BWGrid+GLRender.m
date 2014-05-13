@@ -24,6 +24,7 @@
 */
 
 
+#include <math.h>
 #import <Quartz/Quartz.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import "BWGrid+GLRender.h"
@@ -43,13 +44,15 @@
     const CGFloat* colors = CGColorGetComponents(color);
     int J=0;
     // Create the first row
-    for(int I = 0; I < 32; I++, J++)
+    for(int I = 0; I < 32; I++)
     {
-        double alpha = sin(I*2*M_PI/64.0);
-        texture[J++] = (uint8_t)(0.5+colors[0]*alpha);
-        texture[J++] = (uint8_t)(0.5+colors[1]*alpha);
-        texture[J++] = (uint8_t)(0.5+colors[2]*alpha);
-        texture[J++] = (uint8_t)(0.5+colors[3]*alpha);
+        double s = sin(I*M_PI/32.0);
+        double alpha = (0.35+s*s*8.0)*colors[3];
+        if (alpha > 1.0) alpha = 1.0;
+        texture[J++] = (uint8_t)(255*colors[0]*alpha);
+        texture[J++] = (uint8_t)(255*colors[1]*alpha);
+        texture[J++] = (uint8_t)(255*colors[2]*alpha);
+        texture[J++] = (uint8_t)(255*alpha);
     }
     // Now copy each row
     for (int I = 1; I < 32; I++, J+= 32)
@@ -86,7 +89,7 @@
 /** Stroke each of the particle motions
     @param cgl_ctx The open GL context
  
- Note: I'm not sure that this is actually using the texture
+    Note: I'm not sure that this is actually using the texture
  */
 - (void) drawParticles: (CGLContextObj) cgl_ctx
 {
@@ -97,6 +100,10 @@
     GLint  saveMode;
     if (!_numParticles)
         return;
+
+    GLenum err = glGetError();
+    if (err)
+        NSLog(LogPrefix @"gl error 0x%x (line %d)", err, __LINE__);
 
     /* Setup OpenGL states */
     glGetIntegerv(GL_VIEWPORT, saveViewport);
@@ -116,8 +123,6 @@
 
     // Tell openGL to support our methods
     glDisable(GL_DEPTH_TEST);
-    glAlphaFunc(GL_GREATER, 0.0f);
-    glEnable(GL_ALPHA_TEST);
 //    glShadeModel(GL_FLAT);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
@@ -131,7 +136,7 @@
     glGenTextures(1, &theTexture);
     glBindTexture(GL_TEXTURE_2D, theTexture);
     
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 32, 1, 0,
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 32, 32, 0,
                  GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, textureMap);
     glGenerateMipmap(GL_TEXTURE_2D);  //Generate num_mipmaps number of mipmaps here.
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -142,21 +147,23 @@
     
     //  now draw lines
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);//GL_MODULATE);//
+    glEnable(GL_ALPHA_TEST);
+    glAlphaFunc(GL_GREATER, 0.0f);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);//
     
     // Vive it the vertices
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2,GL_FLOAT,0, hostVertices);
-    GLenum err = glGetError();
+    err = glGetError();
     if (err)
-        NSLog(@"vertex pointer error %x", err);
+        NSLog(LogPrefix @"vertex pointer error 0x%x (line %d)", err, __LINE__);
 #if 1
     // Attempting a texture map
     glTexCoordPointer(2,GL_FLOAT,0,textureMap);
     err =glGetError();
     if (err)
-        NSLog(@"texture pointer error %x",err);
+        NSLog(LogPrefix @"texture pointer error 0x%x",err);
 #endif
     glEnableClientState( GL_COLOR_ARRAY );
     glColorPointer(4, GL_FLOAT, 0, colorMap);
@@ -169,6 +176,8 @@
     glDisableClientState(GL_VERTEX_ARRAY);
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_BLEND);
+    glDisable(GL_ALPHA_TEST);
+
 
     /* Restore OpenGL states */
     glMatrixMode(GL_MODELVIEW);
@@ -192,10 +201,16 @@
     // We'll use texture rectangles (TBD)
     // If found that GL_TEXTURE_2D just does not work
 	glBindTexture(GL_TEXTURE_RECTANGLE_EXT, texName);
-    // Define the size and initial contents of the texture buffer.  We are possing in the "background"
+    GLenum err = glGetError();
+    if (err)
+        NSLog(LogPrefix @"bind texture error 0x%x (line %d)", err, __LINE__);
+
+    // Define the size and initial contents of the texture buffer.  We are passing in the "background"
     // image as the initial content for the texture
     glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA8, self.numXBins, self.numYBins, 0,
-                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, background);
+                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, NULL);// background);
+    if ((err = glGetError()))
+        NSLog(LogPrefix @"texImage2D error 0x%x (line %d)", err, __LINE__);
     
     // The tutorial says we need filtering
     glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -214,6 +229,19 @@
     // Always check that it is ok
 	if(status == GL_FRAMEBUFFER_COMPLETE_EXT)
     {
+#if 0
+        // I'm not sure if this does anything yet
+        if (1 || !background)
+        {
+            // Set to transparent
+            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            // Clear the background
+            glClear(GL_COLOR_BUFFER_BIT);
+            if ((err = glGetError()))
+                NSLog(LogPrefix @"glClear error 0x%x (line %d)", err, __LINE__);
+        }
+#endif
+
         // This might be over kill, but we need to save atleast some of the state .. just not sure which
         // If we don't the rendering of other gradients doesn't come out right
         glPushAttrib(GL_ALL_ATTRIB_BITS);

@@ -29,6 +29,10 @@
 
 #define FormatCL CL_BGRA
 
+#ifndef LogPrefix
+#define LogPrefix @"BWAnimateVectorFieldPlugin: "
+#endif
+
 @interface BWGrid: NSObject
 {
     /// The Grand Central Dispatch queue

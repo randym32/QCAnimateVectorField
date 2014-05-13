@@ -201,7 +201,7 @@
         // Perform the particle movement
         particleMove_kernel(&range
                             , vertices
-                            , 0.0800f
+                            , 0.0900f
                             , self.numXBins, self.numYBins
                             , self.vectorField
                             , seed

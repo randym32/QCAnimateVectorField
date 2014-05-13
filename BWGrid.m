@@ -26,6 +26,10 @@
 #import "BWGrid.h"
 #import "BWGrid-Animate.h"
 
+/// For debugging purposes, we allow the GPU to be enabled and disabled.
+BOOL openCL_GPU_EN = true;
+
+
 @implementation BWGrid
 /** Initialize the simuluation with a gien number of particles
     @param numParticles  The number of particles in the simulations
@@ -37,14 +41,23 @@
                      height: (int) height
 {
     // First, try to obtain a dispatch queue that can send work to the
-    // GPU in our system.                                             // 2
-    _queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_GPU, NULL);
-    
+    // GPU in our system.
+    if (openCL_GPU_EN)
+    {
+        _queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_GPU, NULL);
+    }
+
     // In the event that our system does NOT have an OpenCL-compatible GPU,
     // we can use the OpenCL CPU compute device instead.
     if (_queue == NULL)
     {
         _queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_CPU, NULL);
+    }
+    
+    if (!_queue)
+    {
+        // There was an error
+        return self;
     }
 
 #if 0
@@ -54,7 +67,7 @@
     cl_device_id device = gcl_get_device_id_with_dispatch_queue(_queue);
     clGetDeviceInfo(device, CL_DEVICE_NAME, sizeof(char)*128, name_buf, NULL);
     clGetDeviceInfo(device, CL_DEVICE_VENDOR, sizeof(char)*128, vendor_buf, NULL);
-    NSLog (@"OpenCL name:%@  vendor:%@"
+    NSLog (LogPrefix @"OpenCL name:%@  vendor:%@"
           , [[[NSString alloc] initWithUTF8String: name_buf] autorelease]
           , [[[NSString alloc] initWithUTF8String: vendor_buf] autorelease]
           );
@@ -67,15 +80,13 @@
     // Allocate the seed
     seed =gcl_malloc(sizeof(*seed), NULL, CL_MEM_READ_WRITE);
 
-    // Create a buffer for the background image
-    background = valloc(4*self.numXBins*self.numYBins);
-    
     // Allocate the particles in the system
     [self setNumParticles: numParticles];
     
     // Tradition
     return self;
 }
+
 
 - (void)dealloc
 {
@@ -86,10 +97,13 @@
     BW_gcl_free(self.vectorField);
     BW_gcl_free(vertices);
     BW_free(hostVertices);
-    // Finally, release your queue just as you would any GCD queue.    // 11
-    dispatch_release(_queue);
-
-    [super dealloc];
+#if !defined(OS_OBJECT_USE_OBJC_RETAIN_RELEASE) || !OS_OBJECT_USE_OBJC_RETAIN_RELEASE
+    // Finally, release your queue just as you would any GCD queue.
+    if (_queue)
+    {
+        dispatch_release(_queue);
+    }
+#endif
 }
 
 

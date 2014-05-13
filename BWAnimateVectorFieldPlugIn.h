@@ -28,6 +28,7 @@
 #import "BWGrid.h"
 
 
+
 @interface BWAnimateVectorFieldPlugin : QCPlugIn
 {
     /// This is the field animation model
