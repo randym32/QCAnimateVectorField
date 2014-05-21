@@ -27,13 +27,13 @@
 #import "BWGrid.h"
 
 @interface BWGrid (build)
-/** Load the data in the JSON file
-    @param path  The path to the JSON file.
+/** Load the flow data
+    @param data          The flow data.
     @param velocityScale how much to scale the velocity magnitude by
     @return true on success, false on failure
 */
-- (bool) loadJSON: (NSString*) path
-    velocityScale: (float) velocityScale
-                ;
+- (bool) interpretData: (NSDictionary*) data
+         velocityScale: (float) velocityScale
+                      ;
 
 @end

@@ -26,9 +26,7 @@
 		16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16BA96300A7EB9AC001E4983 /* Quartz.framework */; };
 		3DA9C9E01871D3CB00FF9062 /* BWGrid.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9D91871D3CB00FF9062 /* BWGrid.m */; };
 		3DA9C9E11871D3CB00FF9062 /* BWGrid+build.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DB1871D3CB00FF9062 /* BWGrid+build.m */; };
-		3DA9C9E21871D3CB00FF9062 /* BWGrid+Colorize.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DD1871D3CB00FF9062 /* BWGrid+Colorize.m */; };
 		3DA9C9E31871D3CB00FF9062 /* gridBuild.cl in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DE1871D3CB00FF9062 /* gridBuild.cl */; };
-		3DA9C9E41871D3CB00FF9062 /* gridColorize.cl in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DF1871D3CB00FF9062 /* gridColorize.cl */; };
 		3DA9C9E71871D4D100FF9062 /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DA9C9E61871D4D100FF9062 /* OpenCL.framework */; };
 		3DC1CCEF1871F239007396DF /* BWGrid-Animate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC1CCEE1871F239007396DF /* BWGrid-Animate.m */; };
 		3DC1CCF11871F24F007396DF /* particleMove.cl in Sources */ = {isa = PBXBuildFile; fileRef = 3DC1CCF01871F24F007396DF /* particleMove.cl */; };
@@ -56,11 +54,8 @@
 		3DA9C9D91871D3CB00FF9062 /* BWGrid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BWGrid.m; sourceTree = "<group>"; };
 		3DA9C9DA1871D3CB00FF9062 /* BWGrid+build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid+build.h"; sourceTree = "<group>"; };
 		3DA9C9DB1871D3CB00FF9062 /* BWGrid+build.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BWGrid+build.m"; sourceTree = "<group>"; };
-		3DA9C9DC1871D3CB00FF9062 /* BWGrid+Colorize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid+Colorize.h"; sourceTree = "<group>"; };
-		3DA9C9DD1871D3CB00FF9062 /* BWGrid+Colorize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BWGrid+Colorize.m"; sourceTree = "<group>"; };
 		3DA9C9DE1871D3CB00FF9062 /* gridBuild.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = gridBuild.cl; sourceTree = "<group>"; };
-		3DA9C9DF1871D3CB00FF9062 /* gridColorize.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = gridColorize.cl; sourceTree = "<group>"; };
-		3DA9C9E61871D4D100FF9062 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = "/Users/randym/Desktop/earth wind/QC Particle Field/../../../../System/Library/Frameworks/OpenCL.framework"; sourceTree = "<absolute>"; };
+		3DA9C9E61871D4D100FF9062 /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = /System/Library/Frameworks/OpenCL.framework; sourceTree = "<absolute>"; };
 		3DC1CCED1871F239007396DF /* BWGrid-Animate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid-Animate.h"; sourceTree = "<group>"; };
 		3DC1CCEE1871F239007396DF /* BWGrid-Animate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BWGrid-Animate.m"; sourceTree = "<group>"; };
 		3DC1CCF01871F24F007396DF /* particleMove.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = particleMove.cl; sourceTree = "<group>"; };
@@ -151,9 +146,6 @@
 				3DA9C9DE1871D3CB00FF9062 /* gridBuild.cl */,
 				3DA9C9DA1871D3CB00FF9062 /* BWGrid+build.h */,
 				3DA9C9DB1871D3CB00FF9062 /* BWGrid+build.m */,
-				3DA9C9DF1871D3CB00FF9062 /* gridColorize.cl */,
-				3DA9C9DC1871D3CB00FF9062 /* BWGrid+Colorize.h */,
-				3DA9C9DD1871D3CB00FF9062 /* BWGrid+Colorize.m */,
 				3DC1CCF21871F47E007396DF /* BWGrid+GLRender.h */,
 				3DC1CCF31871F47E007396DF /* BWGrid+GLRender.m */,
 			);
@@ -238,8 +230,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				16BA95420A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m in Sources */,
-				3DA9C9E41871D3CB00FF9062 /* gridColorize.cl in Sources */,
-				3DA9C9E21871D3CB00FF9062 /* BWGrid+Colorize.m in Sources */,
 				3DA9C9E31871D3CB00FF9062 /* gridBuild.cl in Sources */,
 				3DA9C9E01871D3CB00FF9062 /* BWGrid.m in Sources */,
 				3DA9C9E11871D3CB00FF9062 /* BWGrid+build.m in Sources */,
@@ -301,8 +291,9 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -311,7 +302,8 @@
 			buildSettings = {
 				CLANG_ENABLE_OBJC_ARC = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
-				SDKROOT = macosx10.8;
+				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};

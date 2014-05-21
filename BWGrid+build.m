@@ -32,51 +32,37 @@
 /** This converts an NSArray of NSNumber to a c-array of floats
     @param ary The 
  */
-- (cl_float*) arrayOfFloat: (NSArray*) ary
+- (cl_float*) arrayOfFloat: (NSDictionary*) ary
 {
     // Get the number of items in the array
     NSUInteger count = [ary count];
     // Allocate space to hold it
     cl_float* ret = malloc(sizeof(cl_float)*count);
     // Copy them to a machine format
-    for (uint I = 0; I < count; I++)
+    for (NSObject* key in ary)
     {
-        ret[I] = [[ary objectAtIndex:I] floatValue];
+        ret[[(NSNumber*)key intValue]] = [ary[key] floatValue];
     }
     // return
     return ret;
 }
 
 
-/** This loads the JSON data file
-    @param path The path to the JSON file
+/** Load the flow data
+    @param data          The flow data.
+    @param velocityScale how much to scale the velocity magnitude by
     @return true on success, false on failure
- */
-- (bool) loadJSON: (NSString*) path
-    velocityScale: (float) velocityScale
+*/
+- (bool) interpretData: (NSDictionary*) data
+         velocityScale: (float) velocityScale
 {
     NSError *e = nil;
-    NSData* data = [NSData dataWithContentsOfFile: path];
-    if (!data)
-    {
-        data = [NSData dataWithContentsOfURL: [NSURL URLWithString: path]];
-        if (!data)
-        {
-            //NSLog(@"no data?");
-            return false;
-        }
-    }
-
-    // Read the JSON file
-    NSArray *jsonArray = [NSJSONSerialization JSONObjectWithData: data
-                                                         options: NSJSONReadingMutableContainers
-                                                           error: &e];
-    if (!jsonArray || e)
+    if (!data || e)
     {
         NSLog(@"error, could not load: %@", e);
         return false;
     }
-    [self start: jsonArray
+    [self start: data
   velocityScale: velocityScale];
     return true;
 }
@@ -86,7 +72,7 @@
     @param path  The path to the JSON file.
     @param velocityScale how much to scale the velocity magnitude by
  */
-- (void) start: (NSArray*) jsonArray
+- (void) start: (NSDictionary*) jsonArray
  velocityScale: (float) velocityScale
 {
     // There will be 2 objects in the JSON aray
@@ -96,8 +82,9 @@
     cl_float2 delta;    // distance between grid points (e.g., 2.5 deg lon, 2.5 deg lat)
     cl_uint2  srcSize;  // number of grid points W-E and N-S (e.g., 144 x 73) in the original data
     cl_float2 origin;   // the grid's origin (e.g., 0.0E, 90.0N)
-    for (NSDictionary* vector in jsonArray)
+    for (NSObject* key in jsonArray)
     {
+        NSDictionary* vector = jsonArray[key];
         // There are two keys: header, data
         NSDictionary* header          = vector[@"header"];
         // Copy the header info.. this is often duplicationed, so don't wory about it

@@ -33,34 +33,40 @@
 {
     /// This is the field animation model
     BWGrid* field;
-    /// Tracks whether or not the the input image has been used yet or not
-    bool backgroundIsNull;
 }
 
-//@property(assign) NSArray* inputStructure;
-
+// --- Inputs ----------------------------------------------------------------------
 
 /* Declare a property input port of type "Index" and with the key "inputNumParticles"
-    This is the number of particles to use in the animation.*/
+ This is the number of particles to use in the animation.*/
 @property NSUInteger inputNumParticles;
 
 
-/* Declare a property input port of type "String" and with the key "inputJSONURL"
-    This is the URL for the JSON data file.
+
+/* Declare a property input port of type "Structure" and with the key "inputStructure"
+    This is the JSON data file.
  */
-@property(assign) NSString* inputJSONURL;
+@property(assign) NSDictionary* inputStructure;
 
 /* Declare a property input port of type "Color" and with the key "inputVectorColor" */
 @property(assign) CGColorRef inputVectorColor;
 
+@property(assign) NSUInteger inputWidth;
+@property(assign) NSUInteger inputHeight;
+
 /* Declare a property input port of type "Color" and with the key "inputEndColor" */
 //@property(assign) CGColorRef inputEndColor;
 
-/* Declare a property input port of type "Image" and with the key "inputImage" */
-@property(assign) id<QCPlugInInputImageSource> inputImage;
+// --- Outputs ---------------------------------------------------------------------
 
 /* Declare a property output port of type "Image" and with the key "outputImage" */
 @property(assign) id<QCPlugInOutputImageProvider> outputImage;
+
+// --- Settings --------------------------------------------------------------------
+/* Declare a property input port of type "Index" and with the key "inputNumParticles"
+ This is the number of particles to use in the animation.*/
+//@property NSUInteger settingNumParticles;
+
 
 @end
 
