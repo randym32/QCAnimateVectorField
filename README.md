@@ -11,6 +11,11 @@ Demo
 [![ScreenShot](https://i.ytimg.com/vi/rO18j0saUAY/hqdefault.jpg)](http://youtu.be/rO18j0saUAY)
 
 
+Installation
+------------
+Remove the old plugin from ~/Library/Graphics/Quartz Composer Plug-Ins
+Copy the new plugin into ~/Library/Graphics/Quartz Composer Plug-Ins
+
 Requirements
 ---------------
 The plugin was created using the Xcode editor running under Mac OS X 10.8.x or later. 
