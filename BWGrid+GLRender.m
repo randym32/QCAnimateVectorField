@@ -78,6 +78,11 @@
         memcpy(colorMap+J, colorMap, sizeof(float)*16);
 }
 
+// RCM -- some thought that is causing a NVIDIA crash
+// eg the mipmaps
+// Setting to 0 increases framerate, but slightly less pretty particles
+// The GL tutorials say that I should be using GL shaders anyway
+#define PARTICLE_TEXTURE_EN (0)
 
 //  glBegin(GL_LINES);
 // Execute is ~ 19000 usec
@@ -93,8 +98,10 @@
  */
 - (void) drawParticles: (CGLContextObj) cgl_ctx
 {
+#if PARTICLE_TEXTURE_EN > 0
     // Get the colors
     GLuint theTexture = 0;
+#endif
     GLint saveName;
     GLint saveViewport[4];
     GLint  saveMode;
@@ -128,7 +135,7 @@
     glDisable(GL_CULL_FACE);
 
     glEnable(GL_TEXTURE_2D);
-#if 1
+#if PARTICLE_TEXTURE_EN > 0
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
@@ -158,7 +165,7 @@
     err = glGetError();
     if (err)
         NSLog(LogPrefix @"vertex pointer error 0x%x (line %d)", err, __LINE__);
-#if 1
+#if PARTICLE_TEXTURE_EN > 0
     // Attempting a texture map
     glTexCoordPointer(2,GL_FLOAT,0,textureMap);
     err =glGetError();
@@ -168,7 +175,7 @@
     glEnableClientState( GL_COLOR_ARRAY );
     glColorPointer(4, GL_FLOAT, 0, colorMap);
     glDrawArrays(GL_QUADS,0,_numParticles*4);
-#if 1
+#if PARTICLE_TEXTURE_EN > 0
     glDeleteTextures(1, &theTexture);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 #endif
