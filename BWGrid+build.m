@@ -109,9 +109,34 @@
             vary = [self arrayOfFloat:vector[@"data"]];
         }
     }
+#if EXTRA_LOGGING_EN
+    if (!vary)
+    {
+        NSLog(LogPrefix @"no v array");
+    }
+    if (!uary)
+    {
+        NSLog(LogPrefix @"no u array");
+    }
+    if (!count)
+    {
+        NSLog(LogPrefix @"The u / v array had zero count");
+    }
+    if (srcSize .x < 1)
+    {
+        NSLog(LogPrefix @"The x size is less than 1");
+    }
+    if (srcSize .y < 1)
+    {
+        NSLog(LogPrefix @"The y size is less than 1");
+    }
+#endif
     if (!vary || !uary)
         return;
 
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: allocating grid", __FILE__, __LINE__);
+#endif
     // Build the GCL local versions of the array
     cl_float* cl_uary = gcl_malloc(sizeof(*cl_uary)* count, uary, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
     cl_float* cl_vary = gcl_malloc(sizeof(*cl_vary)* count, vary, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR);
@@ -126,6 +151,9 @@
     // Creating the first stage grid
     // Dispatch the kernel block using one of the dispatch_ commands and the
     // queue created earlier.                                            // 5
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: preparing grid", __FILE__, __LINE__);
+#endif
     dispatch_sync(_queue, ^{
         // The N-Dimensional Range over which we'd like to execute our
         // kernel.  In this case, we're operating on a 1D buffer, so
@@ -173,6 +201,9 @@
     cl_float2* myVectorField = gcl_malloc(sizeof(*myVectorField)*self.numXBins*self.numYBins, 0, CL_MEM_READ_WRITE);
 
     // Interpolate to the target field size
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: interpolating", __FILE__, __LINE__);
+#endif
     dispatch_sync(_queue, ^{
         // Call to build the interpolated / metric-distance grid
         cl_ndrange range2 = {                                              // 6
@@ -203,6 +234,9 @@
 
     self.vectorField = myVectorField;
     
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: freeing resources", __FILE__, __LINE__);
+#endif
     // Release the resources
     BW_gcl_free(srcField);
     BW_gcl_free(cl_uary);

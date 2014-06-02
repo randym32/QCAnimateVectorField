@@ -50,6 +50,7 @@
 		16BA95400A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = BWAnimateVectorFieldPlugIn.h; sourceTree = "<group>"; };
 		16BA95410A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = BWAnimateVectorFieldPlugIn.m; sourceTree = "<group>"; };
 		16BA96300A7EB9AC001E4983 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
+		3D1A6840193CD19B00C7FB65 /* AppConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppConfig.h; sourceTree = "<group>"; };
 		3DA9C9D81871D3CB00FF9062 /* BWGrid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BWGrid.h; sourceTree = "<group>"; };
 		3DA9C9D91871D3CB00FF9062 /* BWGrid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BWGrid.m; sourceTree = "<group>"; };
 		3DA9C9DA1871D3CB00FF9062 /* BWGrid+build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid+build.h"; sourceTree = "<group>"; };
@@ -82,6 +83,7 @@
 		089C166AFE841209C02AAC07 /* Quartz Composer Plug In */ = {
 			isa = PBXGroup;
 			children = (
+				3D1A6840193CD19B00C7FB65 /* AppConfig.h */,
 				3DA9C9E51871D3E600FF9062 /* Vector Field */,
 				08FB77AFFE84173DC02AAC07 /* Classes */,
 				32C88E010371C26100C91783 /* Other Sources */,

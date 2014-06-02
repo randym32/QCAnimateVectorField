@@ -78,12 +78,6 @@
         memcpy(colorMap+J, colorMap, sizeof(float)*16);
 }
 
-// RCM -- some thought that is causing a NVIDIA crash
-// eg the mipmaps
-// Setting to 0 increases framerate, but slightly less pretty particles
-// The GL tutorials say that I should be using GL shaders anyway
-#define PARTICLE_TEXTURE_EN (0)
-
 //  glBegin(GL_LINES);
 // Execute is ~ 19000 usec
 // Render is ~ 7000 usec
@@ -235,17 +229,14 @@
     // Always check that it is ok
 	if(status == GL_FRAMEBUFFER_COMPLETE_EXT)
     {
-#if 0
+#if CLEAR_BACKGROUND_EN
         // I'm not sure if this does anything yet
-        if (1 || !background)
-        {
-            // Set to transparent
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            // Clear the background
-            glClear(GL_COLOR_BUFFER_BIT);
-            if ((err = glGetError()))
-                NSLog(LogPrefix @"glClear error 0x%x (line %d)", err, __LINE__);
-        }
+        // Set to transparent
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        // Clear the background
+        glClear(GL_COLOR_BUFFER_BIT);
+        if ((err = glGetError()))
+            NSLog(LogPrefix @"glClear error 0x%x (line %d)", err, __LINE__);
 #endif
 
         // This might be over kill, but we need to save atleast some of the state .. just not sure which

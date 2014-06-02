@@ -230,7 +230,6 @@ NSDictionary* attributesForPort = nil;
     GLuint texName = [field draw: cgl_ctx];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
-//    glFlush();
     /* Check for OpenGL errors */
     GLenum status = glGetError();
     if(status)
@@ -250,7 +249,7 @@ NSDictionary* attributesForPort = nil;
     
     // Pass the results to Quartz Composer, by passing it the texture identifer
     id provider = nil;
-    if (texName)
+    if (texName && texName)
     {
         provider= [context outputImageProviderFromTextureWithPixelFormat: HostFormat
                                                               pixelsWide: field.numXBins
@@ -267,7 +266,6 @@ NSDictionary* attributesForPort = nil;
     if (!provider)
     {
         glDeleteTextures(1, &texName);
-        return NO;
     }
 
 	// Let Quartz know our output

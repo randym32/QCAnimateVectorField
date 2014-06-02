@@ -2,4 +2,5 @@
 
 #ifdef __OBJC__
 	#import <Quartz/Quartz.h>
+#include "AppConfig.h"
 #endif
