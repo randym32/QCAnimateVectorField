@@ -59,7 +59,7 @@
     NSError *e = nil;
     if (!data || e)
     {
-        NSLog(@"error, could not load: %@", e);
+        NSLog(LogPrefix @"error, could not load: %@", e);
         return false;
     }
     [self start: data

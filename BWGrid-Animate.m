@@ -80,7 +80,7 @@
             hostVertices = newHostVertices;
         }
         else
-            NSLog(@"realloc failed");
+            NSLog(LogPrefix @"realloc failed");
     }
     // The number of particles that
     _numParticles= _numAllocatedParticles;
