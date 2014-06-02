@@ -126,7 +126,6 @@ NSDictionary* attributesForPort = nil;
 + (QCPlugInTimeMode) timeMode
 {
 	/* This plug-in does not depend on the time (time parameter is completely ignored in the -execute:atTime:withArguments: method) */
-	//return kQCPlugInTimeModeIdle;//
     return kQCPlugInTimeModeTimeBase;
 }
 
@@ -230,6 +229,11 @@ NSDictionary* attributesForPort = nil;
     GLuint texName = [field draw: cgl_ctx];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
+    /* Make sure to flush as we use FBOs and the passed OpenGL context may not have a surface attached */
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: glFushRenderApple", __FILE__, __LINE__);
+#endif
+    glFlushRenderAPPLE();
     /* Check for OpenGL errors */
     GLenum status = glGetError();
     if(status)
@@ -242,10 +246,8 @@ NSDictionary* attributesForPort = nil;
         glDeleteTextures(1, &texName);
         texName = 0;
     }
-
-
-    /* Make sure to flush as we use FBOs and the passed OpenGL context may not have a surface attached */
-    glFlushRenderAPPLE();
+    
+    
     
     // Pass the results to Quartz Composer, by passing it the texture identifer
     id provider = nil;

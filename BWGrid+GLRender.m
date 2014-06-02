@@ -224,6 +224,9 @@
     // Set the list of draw buffers
     GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0_EXT};
     glDrawBuffers(1, DrawBuffers);
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%s,%d: checking frame buffer status", __FILE__, __LINE__);
+#endif
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     
     // Always check that it is ok
