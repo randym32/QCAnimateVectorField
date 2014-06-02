@@ -205,17 +205,16 @@
     // Create an OpenGL texture that we will pass to Quartz Composer.
     // We will also render to this
     glGenTextures(1, &texName);
-    // We'll use texture rectangles (TBD)
-    // If found that GL_TEXTURE_2D just does not work
+    // We'll use texture rectangles
+    // Uses GL_TEXTURE_RECTANGLE_EXT since the rectangles may be non power of two
 	glBindTexture(GL_TEXTURE_RECTANGLE_EXT, texName);
     GLenum err = glGetError();
     if (err)
         NSLog(LogPrefix @"bind texture error 0x%x (line %d)", err, __LINE__);
 
-    // Define the size and initial contents of the texture buffer.  We are passing in the "background"
-    // image as the initial content for the texture
+    // Define the size and initial contents of the texture buffer.
     glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA8, self.numXBins, self.numYBins, 0,
-                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, NULL);// background);
+                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, NULL);
     if ((err = glGetError()))
         NSLog(LogPrefix @"texImage2D error 0x%x (line %d)", err, __LINE__);
     
@@ -257,6 +256,9 @@
     }
     else
     {
+        NSLog(LogPrefix @"Frame buffer status: 0x%x", status);
+        if ((err = glGetError()))
+            NSLog(LogPrefix @" error 0x%x (line %d)", err, __LINE__);
         //When you're done using the texture, delete it. This will set texname to 0 and
         //delete all of the graphics card memory associated with the texture. If you
         //don't call this method, the texture will stay in graphics card memory until you

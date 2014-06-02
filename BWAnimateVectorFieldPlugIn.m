@@ -229,9 +229,8 @@ NSDictionary* attributesForPort = nil;
     // Render the contents
     GLuint texName = [field draw: cgl_ctx];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
-    glDeleteFramebuffersEXT(1, &frameBuffer);
 
-    glFlush();
+//    glFlush();
     /* Check for OpenGL errors */
     GLenum status = glGetError();
     if(status)
@@ -250,7 +249,10 @@ NSDictionary* attributesForPort = nil;
     glFlushRenderAPPLE();
     
     // Pass the results to Quartz Composer, by passing it the texture identifer
-    id provider = [context outputImageProviderFromTextureWithPixelFormat: HostFormat
+    id provider = nil;
+    if (texName)
+    {
+        provider= [context outputImageProviderFromTextureWithPixelFormat: HostFormat
                                                               pixelsWide: field.numXBins
                                                               pixelsHigh: field.numYBins
                                                                     name: texName
@@ -259,6 +261,8 @@ NSDictionary* attributesForPort = nil;
                                                           releaseContext: NULL
                                                               colorSpace: [context colorSpace]
                                                         shouldColorMatch: YES];
+    }
+    glDeleteFramebuffersEXT(1, &frameBuffer);
     // Check for an error, and clean up if there was a problem
     if (!provider)
     {
