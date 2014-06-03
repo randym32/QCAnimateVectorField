@@ -26,8 +26,17 @@
 #import "BWGrid.h"
 #import "BWGrid-Animate.h"
 
-/// For debugging purposes, we allow the GPU to be enabled and disabled.
-BOOL openCL_GPU_EN = true;
+unsigned long upper_power_of_two(unsigned long v)
+{
+    v--;
+    v |= v >> 1;
+    v |= v >> 2;
+    v |= v >> 4;
+    v |= v >> 8;
+    v |= v >> 16;
+    return v+1;
+    
+}
 
 
 @implementation BWGrid
@@ -42,7 +51,7 @@ BOOL openCL_GPU_EN = true;
 {
     // First, try to obtain a dispatch queue that can send work to the
     // GPU in our system.
-    if (openCL_GPU_EN)
+    if (OPENCL_GPU_EN)
     {
         _queue = gcl_create_dispatch_queue(CL_DEVICE_TYPE_GPU, NULL);
     }
@@ -72,7 +81,13 @@ BOOL openCL_GPU_EN = true;
           , [[[NSString alloc] initWithUTF8String: vendor_buf] autorelease]
           );
 #endif
-    
+
+#if !(FRAMEBUFFER_RECTANGLE_EN) || POWER_OF_2_SIZE_EN
+    // TEXTURE_2D requires that it must be a power of two:
+    width = upper_power_of_two(width);
+    height = upper_power_of_two(height);
+#endif
+
     // Save the size
     self.numXBins = width;
     self.numYBins = height;
