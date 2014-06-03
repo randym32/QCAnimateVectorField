@@ -30,6 +30,7 @@
 #import "BWGrid+GLRender.h"
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
 #import <OpenGL/CGLMacro.h>
+#import "glErrorLogging.h"
 
 #define _max(a,b) (a>b?b:a)
 
@@ -91,6 +92,7 @@
     Note: I'm not sure that this is actually using the texture
  */
 - (void) drawParticles: (CGLContextObj) cgl_ctx
+                logger: (id<Logging>) logger
 {
 #if PARTICLE_TEXTURE_EN > 0
     // Get the colors
@@ -102,10 +104,7 @@
     if (!_numParticles)
         return;
 
-    GLenum err = glGetError();
-    if (err)
-        NSLog(LogPrefix @"gl error 0x%x (line %d)", err, __LINE__);
-
+    
     /* Setup OpenGL states */
     glGetIntegerv(GL_VIEWPORT, saveViewport);
     glViewport(0, 0, self.numXBins, self.numYBins);
@@ -144,6 +143,7 @@
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+    LogGLErrors();
 #endif
     
     //  now draw lines
@@ -156,15 +156,11 @@
     // Vive it the vertices
     glEnableClientState(GL_VERTEX_ARRAY);
     glVertexPointer(2,GL_FLOAT,0, hostVertices);
-    err = glGetError();
-    if (err)
-        NSLog(LogPrefix @"vertex pointer error 0x%x (line %d)", err, __LINE__);
+    LogGLErrors();
 #if PARTICLE_TEXTURE_EN > 0
     // Attempting a texture map
     glTexCoordPointer(2,GL_FLOAT,0,textureMap);
-    err =glGetError();
-    if (err)
-        NSLog(LogPrefix @"texture pointer error 0x%x",err);
+    LogGLErrors();
 #endif
     glEnableClientState( GL_COLOR_ARRAY );
     glColorPointer(4, GL_FLOAT, 0, colorMap);
@@ -190,40 +186,52 @@
     glViewport(saveViewport[0], saveViewport[1], saveViewport[2], saveViewport[3]);
 }
 
-
 /** Draw the scene
  */
 - (GLuint) draw: (CGLContextObj) cgl_ctx
+         logger: (id<Logging>) logger
 {
+    GLuint texType;
     GLuint texName = 0;      // This texture that will be passed to Quartz Composer
     // Create an OpenGL texture that we will pass to Quartz Composer.
     // We will also render to this
     glGenTextures(1, &texName);
+
+#if FRAMEBUFFER_RECTANGLE_EN
     // We'll use texture rectangles
     // Uses GL_TEXTURE_RECTANGLE_EXT since the rectangles may be non power of two
-	glBindTexture(GL_TEXTURE_RECTANGLE_EXT, texName);
-    GLenum err = glGetError();
-    if (err)
-        NSLog(LogPrefix @"bind texture error 0x%x (line %d)", err, __LINE__);
+    texType = GL_TEXTURE_RECTANGLE_EXT;
+	glBindTexture(texType, texName);
+    LogGLErrors();
 
-    // Define the size and initial contents of the texture buffer.
-    glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA8, self.numXBins, self.numYBins, 0,
-                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, NULL);
-    if ((err = glGetError()))
-        NSLog(LogPrefix @"texImage2D error 0x%x (line %d)", err, __LINE__);
+    // The tutorial says we need filtering
+    glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+#else
+    // We'll use texture 2D (GL_TEXTURE_2D)
+    texType = GL_TEXTURE_2D;
+	glBindTexture(texType, texName);
+    LogGLErrors();
     
     // The tutorial says we need filtering
-    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+#endif
+    glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Define the size and initial contents of the texture buffer.
+    glTexImage2D(texType, 0, GL_RGBA8, self.numXBins, self.numYBins, 0,
+                 GL_BGRA, GL_UNSIGNED_BYTE, NULL);
+    LogGLErrors();
     
     // Configure the frame buffer
     // The texName is color attachment 0
-	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_EXT, texName, 0);
+	glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, texType, texName, 0);
     // Set the list of draw buffers
     GLenum DrawBuffers[1] = {GL_COLOR_ATTACHMENT0_EXT};
     glDrawBuffers(1, DrawBuffers);
+    LogGLErrors();
+
 #if EXTRA_LOGGING_EN
     NSLog(LogPrefix @"%s,%d: checking frame buffer status", __FILE__, __LINE__);
 #endif
@@ -238,21 +246,31 @@
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         // Clear the background
         glClear(GL_COLOR_BUFFER_BIT);
-        if ((err = glGetError()))
-            NSLog(LogPrefix @"glClear error 0x%x (line %d)", err, __LINE__);
+        LogGLErrors();
 #endif
 
         // This might be over kill, but we need to save atleast some of the state .. just not sure which
         // If we don't the rendering of other gradients doesn't come out right
         glPushAttrib(GL_ALL_ATTRIB_BITS);
-        [self drawParticles: cgl_ctx ];
+        [self drawParticles: cgl_ctx
+                     logger: logger];
         glPopAttrib(); // Restore old OpenGL States
+#if !(FRAMEBUFFER_RECTANGLE_EN)  && 0
+        // Generate mipmaps for the 2D texture
+        glBindTexture(texType, texName);
+        LogGLErrors();
+        // Generate mipmaps from the rendered-to base level
+        //   Mipmaps reduce shimmering pixels due to better filtering
+        // This call is not accelarated on iOS 4 so do not use
+        //   mipmaps here
+        glGenerateMipmap(GL_TEXTURE_2D);
+        LogGLErrors();
+#endif
     }
     else
     {
         NSLog(LogPrefix @"Frame buffer status: 0x%x", status);
-        if ((err = glGetError()))
-            NSLog(LogPrefix @" error 0x%x (line %d)", err, __LINE__);
+        LogGLErrors();
         //When you're done using the texture, delete it. This will set texname to 0 and
         //delete all of the graphics card memory associated with the texture. If you
         //don't call this method, the texture will stay in graphics card memory until you
