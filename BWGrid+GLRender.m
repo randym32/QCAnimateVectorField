@@ -126,9 +126,10 @@
 //    glShadeModel(GL_FLAT);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
+    glEnable(GL_TEXTURE_RECTANGLE_EXT);
 
-    glEnable(GL_TEXTURE_2D);
 #if PARTICLE_TEXTURE_EN > 0
+    glEnable(GL_TEXTURE_2D);
     glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT,1);
