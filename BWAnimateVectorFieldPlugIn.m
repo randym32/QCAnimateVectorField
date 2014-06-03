@@ -33,6 +33,7 @@
 #import "BWGrid+build.h"
 #import "BWGrid+GLRender.h"
 #import "BWGrid-Animate.h"
+#import "glErrorLogging.h"
 
 #define	kQCPlugIn_Name				@"Animated Vector Field"
 #define	kQCPlugIn_Description		@"Produces an animated image of a given size containing am animation of a vector field.\nRandall Maas 2014"
@@ -213,7 +214,8 @@ NSDictionary* attributesForPort = nil;
         return YES;
     }
 
-    CGLContextObj					cgl_ctx = [context CGLContextObj];
+    CGLContextObj cgl_ctx = [context CGLContextObj];
+    id<Logging>   logger  = (id<Logging>) context;
     
     // Create the rendering target.   This later steps will render to a frame buffer
     // The framebuffer can contain textures
@@ -226,7 +228,8 @@ NSDictionary* attributesForPort = nil;
     // Uppdate the anination
     [field animationStep];
     // Render the contents
-    GLuint texName = [field draw: cgl_ctx];
+    GLuint texName = [field draw: cgl_ctx
+                          logger: logger];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
     /* Make sure to flush as we use FBOs and the passed OpenGL context may not have a surface attached */
@@ -235,10 +238,8 @@ NSDictionary* attributesForPort = nil;
 #endif
     glFlushRenderAPPLE();
     /* Check for OpenGL errors */
-    GLenum status = glGetError();
-    if(status)
+    if(LogGLErrors())
     {
-        NSLog(LogPrefix @"OpenGL error %04X", status);
         //When you're done using the texture, delete it. This will set texname to 0 and
         //delete all of the graphics card memory associated with the texture. If you
         //don't call this method, the texture will stay in graphics card memory until you
@@ -251,7 +252,7 @@ NSDictionary* attributesForPort = nil;
     
     // Pass the results to Quartz Composer, by passing it the texture identifer
     id provider = nil;
-    if (texName && texName)
+    if (texName)
     {
         provider= [context outputImageProviderFromTextureWithPixelFormat: HostFormat
                                                               pixelsWide: field.numXBins

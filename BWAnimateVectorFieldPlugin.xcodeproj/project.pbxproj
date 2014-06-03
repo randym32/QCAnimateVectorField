@@ -24,6 +24,7 @@
 /* Begin PBXBuildFile section */
 		16BA95420A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m in Sources */ = {isa = PBXBuildFile; fileRef = 16BA95410A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m */; };
 		16BA96310A7EB9AC001E4983 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 16BA96300A7EB9AC001E4983 /* Quartz.framework */; };
+		3D1A6844193E1BB700C7FB65 /* glErrorLogging.m in Sources */ = {isa = PBXBuildFile; fileRef = 3D1A6843193E1BB700C7FB65 /* glErrorLogging.m */; };
 		3DA9C9E01871D3CB00FF9062 /* BWGrid.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9D91871D3CB00FF9062 /* BWGrid.m */; };
 		3DA9C9E11871D3CB00FF9062 /* BWGrid+build.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DB1871D3CB00FF9062 /* BWGrid+build.m */; };
 		3DA9C9E31871D3CB00FF9062 /* gridBuild.cl in Sources */ = {isa = PBXBuildFile; fileRef = 3DA9C9DE1871D3CB00FF9062 /* gridBuild.cl */; };
@@ -51,6 +52,8 @@
 		16BA95410A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = BWAnimateVectorFieldPlugIn.m; sourceTree = "<group>"; };
 		16BA96300A7EB9AC001E4983 /* Quartz.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Quartz.framework; path = /System/Library/Frameworks/Quartz.framework; sourceTree = "<absolute>"; };
 		3D1A6840193CD19B00C7FB65 /* AppConfig.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppConfig.h; sourceTree = "<group>"; };
+		3D1A6842193E1BB700C7FB65 /* glErrorLogging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = glErrorLogging.h; sourceTree = "<group>"; };
+		3D1A6843193E1BB700C7FB65 /* glErrorLogging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = glErrorLogging.m; sourceTree = "<group>"; };
 		3DA9C9D81871D3CB00FF9062 /* BWGrid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BWGrid.h; sourceTree = "<group>"; };
 		3DA9C9D91871D3CB00FF9062 /* BWGrid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BWGrid.m; sourceTree = "<group>"; };
 		3DA9C9DA1871D3CB00FF9062 /* BWGrid+build.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid+build.h"; sourceTree = "<group>"; };
@@ -132,6 +135,8 @@
 		32C88E010371C26100C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
+				3D1A6842193E1BB700C7FB65 /* glErrorLogging.h */,
+				3D1A6843193E1BB700C7FB65 /* glErrorLogging.m */,
 				16AA5C440A7EEE7300888E31 /* BWAnimateVectorFieldPlugin_Prefix.pch */,
 			);
 			name = "Other Sources";
@@ -238,6 +243,7 @@
 				3DC1CCF41871F47E007396DF /* BWGrid+GLRender.m in Sources */,
 				3DC1CCF11871F24F007396DF /* particleMove.cl in Sources */,
 				3DC1CCEF1871F239007396DF /* BWGrid-Animate.m in Sources */,
+				3D1A6844193E1BB700C7FB65 /* glErrorLogging.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
