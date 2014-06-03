@@ -25,7 +25,7 @@
 
 
 #import "BWGrid.h"
-
+@protocol Logging;
 @interface BWGrid (GLRender)
 
 /** Create a smooth texture (for the line strokes) for the particle
@@ -36,7 +36,9 @@
 
 /** Stroke each of the particle motions
     @param cgl_ctx The open GL context
+    @param logger  The object to log with
  */
 - (GLuint) draw: (CGLContextObj) cgl_ctx
+         logger: (id<Logging>) logger
                ;
 @end
