@@ -24,8 +24,65 @@
 
 #import "BWGrid-Animate.h"
 #include "particleMove.cl.h"
+#import "BWGLVertexBuffer.h"
 
 @implementation BWGrid (Animate)
+
+#if QUADS_EN < 1
+/** This creates a set of indexes into the vertices.  This is done as as I don't wan't to modify the
+    openCL code to handle more vertices, during testing
+    @param logger  The object to log with
+ */
+- (void) createVertexIndices: (id<Logging>)      logger
+{
+    // I'm using 32 bits here.. if we cap the number of particles to less than 65K, we can switch to 16bit
+    unsigned numIndices = 6*_numParticles;
+    unsigned* indices = malloc(numIndices*sizeof(*indices));
+    unsigned* iPtr = indices;
+    
+    // Go thru and create the indices that wind the triangles in the same way
+    //  (v0, v1, v2)
+    //  (v0, v2, v3)
+    for (unsigned I=0, J=0; I < _numParticles; I++, J+=4)
+    {
+        *iPtr++ = 0+J; *iPtr++ = 1+J; *iPtr++ = 2+J;
+        *iPtr++ = 0+J; *iPtr++ = 2+J; *iPtr++ = 3+J;
+    }
+    
+    // Pass these off to the graphics subsystem
+    if ([shader.vertices setElements: (GLubyte*) indices
+                         numElements: numIndices
+                                type: GL_UNSIGNED_INT
+                           arraySize: sizeof(*indices)*numIndices
+                              logger: logger])
+    {
+        // we don't retain the indices
+        free(indices);
+    }
+}
+
+
+- (void) createVertexArray: (id<Logging>)     logger
+{
+    // Put the vertex array into the fold
+#if VERTEX_BUFFER_EN > 0
+    shader.vertices = [[BWGLVertexBuffer alloc] init: cgl_ctx
+                                              logger: logger];
+#else
+    shader.vertices  =  [[BWGLVertexArray alloc] init: cgl_ctx
+                                               logger: logger];
+#endif
+    // Tell it about the vertices
+    [shader.vertices setPositions: (GLubyte*) hostVertices
+                             type: GL_FLOAT
+                             size: 2
+                        arraySize: sizeof(*hostVertices)*_numAllocatedParticles*numVerticesPerParticle
+                           logger: logger];
+    
+    // Create the triangle vertex indices
+    [self createVertexIndices: logger];
+}
+#endif
 
 /** This is used to change the number of particles in the animation
     @param numParticles  The number particles that should be in the system
@@ -34,6 +91,7 @@
     old points
  */
 - (void) setNumParticles : (int) numParticles
+                   logger: (id<Logging>)     logger
 {
     // Check for the easiest case first
     if (numParticles <= _numParticles)
@@ -67,12 +125,12 @@
     // Allocate the array of particle positions
     if (!hostVertices)
     {
-        hostVertices= calloc(sizeof(*hostVertices), 4*numParticles);
+        hostVertices= calloc(sizeof(*hostVertices), numVerticesPerParticle*numParticles);
         _numAllocatedParticles= numParticles;
     }
     else
     {
-        cl_float2* newHostVertices = realloc(hostVertices, sizeof(*hostVertices)* 4*numParticles);
+        cl_float2* newHostVertices = realloc(hostVertices, sizeof(*hostVertices)* numVerticesPerParticle*numParticles);
         // Check that realloc worked
         if (newHostVertices)
         {
@@ -82,12 +140,23 @@
         else
             NSLog(LogPrefix @"realloc failed");
     }
+    
     // The number of particles that
     _numParticles= _numAllocatedParticles;
+
+#if QUADS_EN < 1
+    // First, create the openGL vertex array
+    [self createVertexArray:logger];
+    
+    // Next, map it into fit within openCL
+    vertices = [shader.vertices openCLBufferForPositions];
+#else
     
     // Set up the openCL access to the particles
-    vertices    = gcl_malloc(sizeof(*vertices)*_numAllocatedParticles*4, hostVertices, CL_MEM_READ_WRITE|CL_MEM_USE_HOST_PTR|CL_MEM_HOST_READ_ONLY);
-    
+    vertices    = gcl_malloc(sizeof(*vertices)*_numAllocatedParticles*numVerticesPerParticle, hostVertices, CL_MEM_READ_WRITE|CL_MEM_USE_HOST_PTR|CL_MEM_HOST_READ_ONLY);
+#endif
+
+#if QUADS_EN > 0
     // Create the texture map vertices
     BW_free(textureMap);
     textureMap = valloc(sizeof(float)*_numAllocatedParticles*2*4);
@@ -103,8 +172,10 @@
         textureMap[I++] = 0;
     }
     
+    
     BW_free(colorMap);
     colorMap = valloc(sizeof(float*)*4*4*_numAllocatedParticles);
+#endif
     // Randomize the new particles
     [self randomizeParticles: count];
 }

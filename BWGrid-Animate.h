@@ -35,7 +35,7 @@
    old points
 */
 - (void) setNumParticles : (int) numParticles
-                         ;
+                   logger: (id<Logging>)     logger;
 
 /** This is used to randomize the num next particles
     @param numParticles The number of particles to initialize

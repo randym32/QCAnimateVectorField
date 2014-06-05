@@ -26,20 +26,32 @@
 
 #import <Foundation/Foundation.h>
 #import <OpenCL/opencl.h>
+#import "BWGLVertexArray.h"
+#import "BWGLShader.h"
 
 #define FormatCL CL_BGRA
+#define numVerticesPerParticle (4)
 
 @interface BWGrid: NSObject
 {
+    /// The openGL context
+    CGLContextObj cgl_ctx;
     /// The Grand Central Dispatch queue
     dispatch_queue_t _queue;
 
-    /// The particle positions
+    /// The particle positions (accessible in openCL only)
     cl_float2* vertices;
+    /// The CPU accessible vertices
     cl_float2* hostVertices;
+    
+#if QUADS_EN < 1
+    BWGLShader* shader;
+#else
+    
     /// The mapping of vertices to the texture
     float* textureMap;
     float* colorMap;
+#endif
     
     /// The number if particles to simulate
     int _numParticles;
@@ -53,6 +65,7 @@
     /// The seed for the random steps
     cl_ulong* seed;
 
+#if QUADS_EN > 0
     /// This is the buffer to hold the frame
     void* background;
     
@@ -61,6 +74,7 @@
     
     // Buffer to hold the texture
     uint8_t texture[4*32*32];
+#endif
 }
 
 /// The number of bins in the x axis
@@ -84,6 +98,8 @@
 - (id) initWithNumParticles: (int)    numParticles
                       width: (int) width
                      height: (int) height
+                    context: (CGLContextObj) cgl_ctxt
+                     logger: (id<Logging>) logger
                            ;
 
 @end

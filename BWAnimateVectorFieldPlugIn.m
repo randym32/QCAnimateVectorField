@@ -154,6 +154,7 @@ NSDictionary* attributesForPort = nil;
 - (void) loadData: (NSDictionary*) data
             width: (int) width
            height: (int) height
+          context: (id<QCPlugInContext>)context
 {
     // releasing old field
     field = nil;
@@ -165,7 +166,9 @@ NSDictionary* attributesForPort = nil;
     field = [[BWGrid alloc]
              initWithNumParticles: self.inputNumParticles
                             width: width
-                           height: height];
+                           height: height
+                        context: [context CGLContextObj]
+                        logger: (id<Logging>) context];
     // loading data file
     if (![field interpretData: data 
                 // scale for wind velocity (completely arbitrary--this value looks nice)
@@ -176,6 +179,7 @@ NSDictionary* attributesForPort = nil;
     }
     
 }
+
 
 // This is the good version of the procedure
 - (BOOL) execute: (id<QCPlugInContext>)context
@@ -191,20 +195,24 @@ NSDictionary* attributesForPort = nil;
         // Load the data
         [self loadData: self.inputStructure
                  width: self.inputWidth
-                height:self.inputHeight];
+                height: self.inputHeight
+               context: context];
     }
 
     // Detect when the number of particles has changed
     if ([self didValueForInputKeyChange:@"settingNumParticles"] || !time)
     {
         // Update the number of particles
-        [field setNumParticles:self.inputNumParticles];
+        [field setNumParticles:self.inputNumParticles
+                        logger: (id<Logging>)context];
     }
     
     if ([self didValueForInputKeyChange:@"inputVectorColor"] || !time)
     {
+#if QUADS_EN > 0
         // updating color
         [field createTexture: self.inputVectorColor];
+#endif
     }
 
     if (!field)
@@ -228,8 +236,7 @@ NSDictionary* attributesForPort = nil;
     // Uppdate the anination
     [field animationStep];
     // Render the contents
-    GLuint texName = [field draw: cgl_ctx
-                          logger: logger];
+    GLuint texName = [field draw: logger];
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 
     /* Make sure to flush as we use FBOs and the passed OpenGL context may not have a surface attached */
@@ -268,6 +275,7 @@ NSDictionary* attributesForPort = nil;
     // Check for an error, and clean up if there was a problem
     if (!provider)
     {
+        [context logMessage:LogPrefix @"unable to send texture rectangle to Quartz Composer"];
         glDeleteTextures(1, &texName);
     }
 

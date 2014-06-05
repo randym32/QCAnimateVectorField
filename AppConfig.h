@@ -29,14 +29,19 @@
 #define CLEAR_BACKGROUND_EN (1)
 
 /// Setting this to 1 will enable more logging info to help me track down problems
-#define EXTRA_LOGGING_EN    (1)
+#define EXTRA_LOGGING_EN    (0)
 
 /// Setting this to 1 forces texture sizes to be a power of 2
 #define POWER_OF_2_SIZE_EN  (1)
 
-/// Setting this to 1 will enable use of GL_TEXTURE_RECTANGLE_EXT as a source for the framebuffer
-/// Don't change this: Quartz Composer requires texture rectangles
-#define FRAMEBUFFER_RECTANGLE_EN (1)
+
+// I think we don't want this
+// Qualds are gone after 3.1
+#define QUADS_EN (0)
+
+/// I think we want this
+// Vertex Arrays are gone 3.1 and later
+#define VERTEX_BUFFER_EN (1)
 
 /// The prefix that entries will appear in the log with
 #define LogPrefix @"BWAnimateVectorFieldPlugin: "

@@ -25,6 +25,7 @@
 
 #import "BWGrid.h"
 #import "BWGrid-Animate.h"
+#import "BWGrid+GLRender.h"
 
 unsigned long upper_power_of_two(unsigned long v)
 {
@@ -45,10 +46,18 @@ unsigned long upper_power_of_two(unsigned long v)
     @param width         The number of bins wide
     @param height        The number of bins high
  */
-- (id) initWithNumParticles: (int)    numParticles
+- (id) initWithNumParticles: (int) numParticles
                       width: (int) width
                      height: (int) height
+                    context: (CGLContextObj) _cgl_ctx
+                     logger: (id<Logging>) logger
 {
+    cgl_ctx = _cgl_ctx;
+    
+    CGLShareGroupObj sharegroup = CGLGetShareGroup(cgl_ctx);
+    gcl_gl_set_sharegroup(sharegroup);
+
+    
     // First, try to obtain a dispatch queue that can send work to the
     // GPU in our system.
     if (OPENCL_GPU_EN)
@@ -82,7 +91,7 @@ unsigned long upper_power_of_two(unsigned long v)
           );
 #endif
 
-#if !(FRAMEBUFFER_RECTANGLE_EN) || POWER_OF_2_SIZE_EN
+#if POWER_OF_2_SIZE_EN
     // TEXTURE_2D requires that it must be a power of two:
     width = upper_power_of_two(width);
     height = upper_power_of_two(height);
@@ -91,12 +100,20 @@ unsigned long upper_power_of_two(unsigned long v)
     // Save the size
     self.numXBins = width;
     self.numYBins = height;
+#if EXTRA_LOGGING_EN
+    NSLog(LogPrefix @"%d x %d w/ %d particles", width, height, numParticles);
+#endif
 
     // Allocate the seed
     seed =gcl_malloc(sizeof(*seed), NULL, CL_MEM_READ_WRITE);
 
+#if QUADS_EN < 1
+    [self loadShaders: logger];
+#endif
+
     // Allocate the particles in the system
-    [self setNumParticles: numParticles];
+    [self setNumParticles: numParticles
+                   logger: logger];
     
     // Tradition
     return self;
@@ -105,13 +122,15 @@ unsigned long upper_power_of_two(unsigned long v)
 
 - (void)dealloc
 {
+#if QUADS_EN > 0
     BW_free(colorMap);
-    BW_free(background);
     BW_free(textureMap);
+    BW_free(background);
+    BW_free(hostVertices);
+#endif
     BW_gcl_free(seed);
     BW_gcl_free(self.vectorField);
     BW_gcl_free(vertices);
-    BW_free(hostVertices);
 #if !defined(OS_OBJECT_USE_OBJC_RETAIN_RELEASE) || !OS_OBJECT_USE_OBJC_RETAIN_RELEASE
     // Finally, release your queue just as you would any GCD queue.
     if (_queue)

@@ -31,11 +31,35 @@
 /* It's highly recommended to use CGL macros instead of changing the current context for plug-ins that perform OpenGL rendering */
 #import <OpenGL/CGLMacro.h>
 #import "glErrorLogging.h"
+#import "BWGLVertexArray.h"
+#import "BWGLVertexBuffer.h"
 
 #define _max(a,b) (a>b?b:a)
 
 @implementation BWGrid (GLRender)
 
+#if QUADS_EN < 1
+- (void) loadShaders: (id<Logging>)   logger
+{
+    glFeatures(cgl_ctx);
+    // Get the shaders
+    NSBundle* bundle =[NSBundle bundleForClass:[self class]];
+    NSURL* vertexURL = [NSURL fileURLWithPath:[bundle pathForResource:@"particle"
+                                                               ofType:@"vsh"]];
+	NSURL* fragmentURL = [NSURL fileURLWithPath:[bundle pathForResource:@"particle"
+                                                                 ofType:@"fsh"]];
+    // Build the shader
+    shader = [[BWGLShader alloc] initWithVertexShader: vertexURL
+                                       fragmentShader: fragmentURL
+                                           withNormal: NO
+                                         withTexcoord: NO
+                                              context: cgl_ctx
+                                              logger: logger];
+}
+#endif
+
+
+#if QUADS_EN > 0
 /** Create a smooth texture (for the line strokes) for the particle
     @param color The color of the line
  */
@@ -78,6 +102,7 @@
     for (int I = 1; I < _numParticles; I++, J+= 16)
         memcpy(colorMap+J, colorMap, sizeof(float)*16);
 }
+#endif
 
 //  glBegin(GL_LINES);
 // Execute is ~ 19000 usec
@@ -91,8 +116,7 @@
  
     Note: I'm not sure that this is actually using the texture
  */
-- (void) drawParticles: (CGLContextObj) cgl_ctx
-                logger: (id<Logging>) logger
+- (void) drawParticles: (id<Logging>) logger
 {
 #if PARTICLE_TEXTURE_EN > 0
     // Get the colors
@@ -102,7 +126,12 @@
     GLint saveViewport[4];
     GLint  saveMode;
     if (!_numParticles)
+    {
+#if EXTRA_LOGGING_EN
+        [logger logMessage:@"No particles"];
+#endif
         return;
+    }
 
     
     /* Setup OpenGL states */
@@ -126,7 +155,6 @@
 //    glShadeModel(GL_FLAT);
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_RECTANGLE_EXT);
 
 #if PARTICLE_TEXTURE_EN > 0
     glEnable(GL_TEXTURE_2D);
@@ -151,28 +179,35 @@
     glEnable(GL_BLEND);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
-    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);//
     
-    // Vive it the vertices
+#if QUADS_EN > 0
+
+    // Give it the vertices
     glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2,GL_FLOAT,0, hostVertices);
+    glVertexPointer(2,GL_FLOAT,2*sizeof(GL_FLOAT), hostVertices);
     LogGLErrors();
 #if PARTICLE_TEXTURE_EN > 0
     // Attempting a texture map
-    glTexCoordPointer(2,GL_FLOAT,0,textureMap);
+    glTexCoordPointer(2,GL_FLOAT,2*sizeof(GL_FLOAT),textureMap);
     LogGLErrors();
 #endif
     glEnableClientState( GL_COLOR_ARRAY );
-    glColorPointer(4, GL_FLOAT, 0, colorMap);
+    glColorPointer(4, GL_FLOAT, 4*sizeof(GL_FLOAT), colorMap);
     glDrawArrays(GL_QUADS,0,_numParticles*4);
 #if PARTICLE_TEXTURE_EN > 0
     glDeleteTextures(1, &theTexture);
     glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+    glDisable(GL_TEXTURE_2D);
 #endif
     glDisableClientState( GL_COLOR_ARRAY );
     glDisableClientState(GL_VERTEX_ARRAY);
-    glDisable(GL_TEXTURE_2D);
+#else
+    [shader evaluate:logger];
+    // Check for errors to make sure all of our setup went ok
+    LogGLErrors();
+#endif
     glDisable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
 
@@ -189,8 +224,7 @@
 
 /** Draw the scene
  */
-- (GLuint) draw: (CGLContextObj) cgl_ctx
-         logger: (id<Logging>) logger
+- (GLuint) draw: (id<Logging>) logger
 {
     GLuint texType;
     GLuint texName = 0;      // This texture that will be passed to Quartz Composer
@@ -198,24 +232,15 @@
     // We will also render to this
     glGenTextures(1, &texName);
 
-#if FRAMEBUFFER_RECTANGLE_EN
     // We'll use texture rectangles
     // Uses GL_TEXTURE_RECTANGLE_EXT since the rectangles may be non power of two
     texType = GL_TEXTURE_RECTANGLE_EXT;
+    glEnable(GL_TEXTURE_RECTANGLE_EXT);
 	glBindTexture(texType, texName);
     LogGLErrors();
 
     // The tutorial says we need filtering
     glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-#else
-    // We'll use texture 2D (GL_TEXTURE_2D)
-    texType = GL_TEXTURE_2D;
-	glBindTexture(texType, texName);
-    LogGLErrors();
-    
-    // The tutorial says we need filtering
-    glTexParameteri(texType, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-#endif
     glTexParameteri(texType, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(texType, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -253,20 +278,9 @@
         // This might be over kill, but we need to save atleast some of the state .. just not sure which
         // If we don't the rendering of other gradients doesn't come out right
         glPushAttrib(GL_ALL_ATTRIB_BITS);
-        [self drawParticles: cgl_ctx
-                     logger: logger];
+        [shader validate];
+        [self drawParticles: logger];
         glPopAttrib(); // Restore old OpenGL States
-#if !(FRAMEBUFFER_RECTANGLE_EN)  && 0
-        // Generate mipmaps for the 2D texture
-        glBindTexture(texType, texName);
-        LogGLErrors();
-        // Generate mipmaps from the rendered-to base level
-        //   Mipmaps reduce shimmering pixels due to better filtering
-        // This call is not accelarated on iOS 4 so do not use
-        //   mipmaps here
-        glGenerateMipmap(GL_TEXTURE_2D);
-        LogGLErrors();
-#endif
     }
     else
     {
