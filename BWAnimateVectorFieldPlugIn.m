@@ -146,6 +146,13 @@ NSDictionary* attributesForPort = nil;
     return self;
 }
 
+
+- (void) stopExecution:(id<QCPlugInContext>)context
+{
+    // The execution is stopped, so get rid of the grid.  If we do it later, the cgl_ctx isn't valid
+    field = nil;
+}
+
 /** This is used to load the given data
     @param data   The data
     @param width  The target width of the data grid
@@ -162,17 +169,18 @@ NSDictionary* attributesForPort = nil;
     {
         return false;
     }
+
     // Allocate the field
     field = [[BWGrid alloc]
              initWithNumParticles: self.inputNumParticles
                             width: width
                            height: height
-                        context: [context CGLContextObj]
-                        logger: (id<Logging>) context];
+                          context: [context CGLContextObj]
+                           logger: (id<Logging>) context];
     // loading data file
     if (![field interpretData: data 
                 // scale for wind velocity (completely arbitrary--this value looks nice)
-                velocityScale: width / (3996.0f)
+                velocityScale: width /  (5000.0f)//(3996.0f)
      ])
     {
         field = nil;
@@ -186,6 +194,7 @@ NSDictionary* attributesForPort = nil;
           atTime: (NSTimeInterval)time
    withArguments: (NSDictionary*)arguments
 {
+    bool updated = !time;
     if ([self didValueForInputKeyChange:@"inputStructure"] || !time)
     {
         field = nil;
@@ -197,22 +206,23 @@ NSDictionary* attributesForPort = nil;
                  width: self.inputWidth
                 height: self.inputHeight
                context: context];
+        updated = true;
     }
 
     // Detect when the number of particles has changed
-    if ([self didValueForInputKeyChange:@"settingNumParticles"] || !time)
+    if ([self didValueForInputKeyChange:@"settingNumParticles"] || updated)
     {
         // Update the number of particles
         [field setNumParticles:self.inputNumParticles
                         logger: (id<Logging>)context];
     }
     
-    if ([self didValueForInputKeyChange:@"inputVectorColor"] || !time)
+    id<Logging>   logger  = (id<Logging>) context;
+    if ([self didValueForInputKeyChange:@"inputVectorColor"] || updated)
     {
-#if QUADS_EN > 0
-        // updating color
-        [field createTexture: self.inputVectorColor];
-#endif
+        // update the particle color
+        [field setColor : self.inputVectorColor
+                  logger: logger];
     }
 
     if (!field)
@@ -223,7 +233,6 @@ NSDictionary* attributesForPort = nil;
     }
 
     CGLContextObj cgl_ctx = [context CGLContextObj];
-    id<Logging>   logger  = (id<Logging>) context;
     
     // Create the rendering target.   This later steps will render to a frame buffer
     // The framebuffer can contain textures
@@ -241,7 +250,7 @@ NSDictionary* attributesForPort = nil;
 
     /* Make sure to flush as we use FBOs and the passed OpenGL context may not have a surface attached */
 #if EXTRA_LOGGING_EN
-    NSLog(LogPrefix @"%s,%d: glFushRenderApple", __FILE__, __LINE__);
+    [context logMessage: LogPrefix @"%s,%d: glFushRenderApple", __FILE__, __LINE__];
 #endif
     glFlushRenderAPPLE();
     /* Check for OpenGL errors */
