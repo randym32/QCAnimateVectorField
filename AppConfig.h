@@ -20,10 +20,6 @@
 #define OPENCL_GPU_EN       (0)
 
 
-// Setting to 0 increases framerate, but slightly less pretty particles
-// The GL tutorials say that I should be using GL shaders anyway
-#define PARTICLE_TEXTURE_EN (0)
-
 /// Setting this to 0 works for me
 /// Setting this to 1 will clear the background and may be a little slower.
 #define CLEAR_BACKGROUND_EN (1)
@@ -32,16 +28,14 @@
 #define EXTRA_LOGGING_EN    (0)
 
 /// Setting this to 1 forces texture sizes to be a power of 2
-#define POWER_OF_2_SIZE_EN  (1)
+#define POWER_OF_2_SIZE_EN  (0)
+
+#define E_EN (0)
+#define SCISSOR_EN (0)
 
 
-// I think we don't want this
-// Qualds are gone after 3.1
-#define QUADS_EN (0)
-
-/// I think we want this
-// Vertex Arrays are gone 3.1 and later
-#define VERTEX_BUFFER_EN (1)
+// How thick to make the lines
+#define LINE_WIDTH (2.5)
 
 /// The prefix that entries will appear in the log with
 #define LogPrefix @"BWAnimateVectorFieldPlugin: "
