@@ -3,15 +3,32 @@
 //  OSXGLEssentials
 //
 //  Created by Randall Maas on 5/24/14.
-//
-//
+/*
+    Copyright (c) 2014, Randall Maas
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
 
 #include "glUtil.h"
 #import "BWGLShader.h"
 #import "BWGLVertexArray.h"
 #import "glErrorLogging.h"
-//#import "BWGLParameter.h"
-//#import "BWFNNode.h"
 
 
 /** Takes a string or a file and converts it into a C string
@@ -25,7 +42,7 @@ char const* toCString(NSObject* obj)
                                            error: &e];
 
     if ([obj isKindOfClass:[NSString class]])
-        return [(NSString*)obj UTF8String];// cStringUsingEncoding: NSASCIIStringEncoding];
+        return [(NSString*)obj UTF8String];
     return NULL;
 }
 
@@ -39,6 +56,10 @@ char const* toCString(NSObject* obj)
 }
 @synthesize prgName;
 
+/** Initializes the shader program
+    @param cgl_ctx   The core graphics GL context
+    @returns nil on error, otherwise a reference to the object
+ */
 - (id)init:  (CGLContextObj) _cgl_ctx
 {
     if (!(self = [super init]))
@@ -148,24 +169,19 @@ char const* toCString(NSObject* obj)
 	{
 		GLchar *log = (GLchar*)malloc(logLength);
 		glGetProgramInfoLog(prgName, logLength, &logLength, log);
-		NSLog(@"Program link log:\n%s\n", log);
+        [logger logMessage:@"Program link log:\n%s\n", log];
 		free(log);
 	}
 	
 	glGetProgramiv(prgName, GL_LINK_STATUS, &status);
 	if (status == 0)
 	{
-		NSLog(@"Failed to link program");
+		[logger logMessage: @"Failed to link program"];
 		return -1;
 	}
 	
 	glUseProgram(prgName);
     
-	///////////////////////////////////////
-	// Setup common program input points //
-	///////////////////////////////////////
-    
-	
 	GLint samplerLoc = glGetUniformLocation(prgName, "diffuseTexture");
 	
 	// Indicate that the diffuse texture will be bound to texture unit 0
@@ -261,12 +277,17 @@ char const* toCString(NSObject* obj)
     needsValidation = true;
 }
 
+
+/** Checks that the program and its settings are reasonable.
+ */
 - (void) validate
 {
 	GLint logLength, status;
+    // Skip validation if validation isn't needed
     if (!needsValidation)
         return false;
     needsValidation = false;
+
     // todo: validate after the frame buffer is
     glValidateProgram(prgName);
 	glGetProgramiv(prgName, GL_INFO_LOG_LENGTH, &logLength);
