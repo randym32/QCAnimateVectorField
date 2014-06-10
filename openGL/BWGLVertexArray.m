@@ -125,8 +125,6 @@
 - (void*) openCLBufferForPositions
 {
     // Next, map it into fit with the
-//    CGLShareGroupObj sharegroup = CGLGetShareGroup(cgl_ctx);
-//    gcl_gl_set_sharegroup(sharegroup);
     return gcl_gl_create_ptr_from_buffer(posBufferName);
 }
 
