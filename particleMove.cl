@@ -81,11 +81,22 @@ __kernel void particleInit( __global float2*   vertex   // position of each part
     // particle has escaped the grid, never to return...
     float2 position = particleRandomize(numXBins, numYBins, seed);
 
+
+    
     // Path from (x,y) to (xt,yt) is visible, so add this particle to the appropriate draw bucket.
-    vertex[4*idx  ] = position;
-    vertex[4*idx+1] = position;
-    vertex[4*idx+2] = position;
-    vertex[4*idx+3] = position;
+#if 0
+    // The positions are actually vertices (4)
+    int idx4 = 4*idx;
+#else
+    // The positions are actually vertices (4)
+    int idx4 = 2*idx;
+#endif
+    vertex[idx4  ] = position;
+    vertex[idx4+1] = position;
+#if 0
+    vertex[idx4+2] = position;
+    vertex[idx4+3] = position;
+#endif
 }
 
 
@@ -107,9 +118,14 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
 {
     // The global id of the work item.  (the index i)
     int idx = get_global_id(0);
-    
+
+#if 0
     // The positions are actually vertices (4)
     int idx4 = 4*idx;
+#else
+    // The positions are actually vertices (4)
+    int idx4 = 2*idx;
+#endif
     
     // The left two are the key ones
     // Get the particle position
@@ -178,8 +194,10 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
     // Path from (x,y) to (xt,yt) is visible, so add this particle to the appropriate draw bucket.
     vertex[idx4]   = position;
     vertex[idx4+1] = position_t;
+#if 0
     vertex[idx4+2] = position_t2;
     vertex[idx4+3] = position2;
+#endif
 }
 
 
