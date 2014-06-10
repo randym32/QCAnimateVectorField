@@ -27,15 +27,19 @@
 #import "BWGrid.h"
 @protocol Logging;
 @interface BWGrid (GLRender)
-#if QUADS_EN < 1
+/** Load the shaders for the particles
+    @param logger  The object to log with
+ */
 - (void) loadShaders: (id<Logging>)   logger;
 
-/** Create a smooth texture (for the line strokes) for the particle
-    @param color The color of the line
-*/
-- (void) createTexture: (CGColorRef)    color
-                    ;
-#endif
+/** Set the color for the particles
+    @param color The color to use for drawing the particles
+    @param logger  The object to log with
+ */
+- (void) setColor: (CGColorRef) color
+           logger: (id<Logging>) logger;
+
+
 
 /** Stroke each of the particle motions
     @param cgl_ctx The open GL context

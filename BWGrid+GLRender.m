@@ -33,12 +33,15 @@
 #import "glErrorLogging.h"
 #import "BWGLVertexArray.h"
 #import "BWGLVertexBuffer.h"
+#import "BWGLParameter.h"
 
 #define _max(a,b) (a>b?b:a)
 
 @implementation BWGrid (GLRender)
 
-#if QUADS_EN < 1
+/** This loads the shader program for the particle shader
+    @param logger  The object to log with
+ */
 - (void) loadShaders: (id<Logging>)   logger
 {
     glFeatures(cgl_ctx);
@@ -54,74 +57,33 @@
                                            withNormal: NO
                                          withTexcoord: NO
                                               context: cgl_ctx
-                                              logger: logger];
+                                               logger: logger];
+    // Look up the color input variable
+    shaderColor =  [shader variableReference:@"inColor1"];
+    // Look up the render size variable
+    shaderRenderSize =  [shader variableReference:@"inRenderSize"];
 }
-#endif
 
 
-#if QUADS_EN > 0
-/** Create a smooth texture (for the line strokes) for the particle
-    @param color The color of the line
+/** Set the color for the particles
+    @param color The color to use for drawing the particles
+    @param logger  The object to log with
  */
-- (void) createTexture: (CGColorRef)    color
+- (void) setColor: (CGColorRef) color
+           logger: (id<Logging>) logger
 {
-    // Get the colors
-    const CGFloat* colors = CGColorGetComponents(color);
-    int J=0;
-    // Create the first row
-    for(int I = 0; I < 32; I++)
-    {
-        double s = sin(I*M_PI/32.0);
-        double alpha = (0.35+s*s*8.0)*colors[3];
-        if (alpha > 1.0) alpha = 1.0;
-        texture[J++] = (uint8_t)(255*colors[0]*alpha);
-        texture[J++] = (uint8_t)(255*colors[1]*alpha);
-        texture[J++] = (uint8_t)(255*colors[2]*alpha);
-        texture[J++] = (uint8_t)(255*alpha);
-    }
-    // Now copy each row
-    for (int I = 1; I < 32; I++, J+= 32)
-    {
-        memcpy(texture+J, texture, 32*4);
-    }
-    _colors[0] = colors[0];
-    _colors[1] = colors[1];
-    _colors[2] = colors[2];
-    _colors[3] = colors[3];
-    
-    // Set up the color tables
-    colorMap[0] = colors[0]*0.9;           colorMap[1] = colors[1]*0.9;
-    colorMap[2] = colors[2]*0.9;           colorMap[3] = colors[3];
-    colorMap[4] = _max(colors[0]*1.2,1.0); colorMap[5] = _max(colors[1]*1.2,1.0);
-    colorMap[6] = _max(colors[2]*1.2,1.0); colorMap[7] = colors[3];
-    colorMap[8] = _max(colors[0]*1.1,1.0); colorMap[9] = _max(colors[1]*1.1,1.0);
-    colorMap[10]= _max(colors[2]*1.1,1.0); colorMap[11]= colors[3];
-    colorMap[12]= colors[0]*0.9;           colorMap[13]= colors[1]*0.9;
-    colorMap[14]= colors[2]*0.9;           colorMap[15]= colors[3];
-    J = 16;
-    for (int I = 1; I < _numParticles; I++, J+= 16)
-        memcpy(colorMap+J, colorMap, sizeof(float)*16);
+    [shaderColor setColor: color
+                   logger: logger];
 }
-#endif
 
-//  glBegin(GL_LINES);
-// Execute is ~ 19000 usec
-// Render is ~ 7000 usec
-// this takes less power than quads
-
-// This is faster
 
 /** Stroke each of the particle motions
-    @param cgl_ctx The open GL context
+    @param logger  The object to log with
  
     Note: I'm not sure that this is actually using the texture
  */
 - (void) drawParticles: (id<Logging>) logger
 {
-#if PARTICLE_TEXTURE_EN > 0
-    // Get the colors
-    GLuint theTexture = 0;
-#endif
     GLint saveName;
     GLint saveViewport[4];
     GLint  saveMode;
@@ -137,9 +99,11 @@
     /* Setup OpenGL states */
     glGetIntegerv(GL_VIEWPORT, saveViewport);
     glViewport(0, 0, self.numXBins, self.numYBins);
+#if SCISSOR_EN > 0
     // Enable clipping (aka scissor)
     glEnable(GL_SCISSOR_TEST);
     glScissor(0, 0, self.numXBins, self.numYBins);
+#endif
     glGetIntegerv(GL_MATRIX_MODE, &saveMode);
 
     glMatrixMode(GL_PROJECTION);
@@ -156,58 +120,22 @@
     glDisable(GL_LIGHTING);
     glDisable(GL_CULL_FACE);
 
-#if PARTICLE_TEXTURE_EN > 0
-    glEnable(GL_TEXTURE_2D);
-    glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-    glPixelStorei(GL_UNPACK_ALIGNMENT,1);
-
-    glGenTextures(1, &theTexture);
-    glBindTexture(GL_TEXTURE_2D, theTexture);
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 32, 32, 0,
-                 GL_BGRA, GL_UNSIGNED_BYTE/*GL_UNSIGNED_INT_8_8_8_8*/, textureMap);
-    glGenerateMipmap(GL_TEXTURE_2D);  //Generate num_mipmaps number of mipmaps here.
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    LogGLErrors();
-#endif
-    
     //  now draw lines
     glEnable(GL_BLEND);
     glEnable(GL_ALPHA_TEST);
     glAlphaFunc(GL_GREATER, 0.0f);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);//
-    
-#if QUADS_EN > 0
-
-    // Give it the vertices
-    glEnableClientState(GL_VERTEX_ARRAY);
-    glVertexPointer(2,GL_FLOAT,2*sizeof(GL_FLOAT), hostVertices);
-    LogGLErrors();
-#if PARTICLE_TEXTURE_EN > 0
-    // Attempting a texture map
-    glTexCoordPointer(2,GL_FLOAT,2*sizeof(GL_FLOAT),textureMap);
-    LogGLErrors();
+    glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
+    glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
+#if E_EN < 1
+//    glEnable(GL_PROGRAM_POINT_SIZE_EXT);
+//    glPointSize(POINT_SIZE);
+    glLineWidth(LINE_WIDTH);
 #endif
-    glEnableClientState( GL_COLOR_ARRAY );
-    glColorPointer(4, GL_FLOAT, 4*sizeof(GL_FLOAT), colorMap);
-    glDrawArrays(GL_QUADS,0,_numParticles*4);
-#if PARTICLE_TEXTURE_EN > 0
-    glDeleteTextures(1, &theTexture);
-    glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-    glDisable(GL_TEXTURE_2D);
-#endif
-    glDisableClientState( GL_COLOR_ARRAY );
-    glDisableClientState(GL_VERTEX_ARRAY);
-#else
+    // Run the shader on the particle vertices
     [shader evaluate:logger];
     // Check for errors to make sure all of our setup went ok
     LogGLErrors();
-#endif
+
     glDisable(GL_BLEND);
     glDisable(GL_ALPHA_TEST);
 
@@ -218,11 +146,14 @@
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
     glMatrixMode(saveMode);
+#if SCISSOR_EN > 0
     glDisable(GL_SCISSOR_TEST);
+#endif
     glViewport(saveViewport[0], saveViewport[1], saveViewport[2], saveViewport[3]);
 }
 
 /** Draw the scene
+    @param logger  The object to log with
  */
 - (GLuint) draw: (id<Logging>) logger
 {
@@ -259,7 +190,7 @@
     LogGLErrors();
 
 #if EXTRA_LOGGING_EN
-    NSLog(LogPrefix @"%s,%d: checking frame buffer status", __FILE__, __LINE__);
+    [logger logMessage:LogPrefix @"%s,%d: checking frame buffer status", __FILE__, __LINE__];
 #endif
 	GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
     
@@ -284,7 +215,7 @@
     }
     else
     {
-        NSLog(LogPrefix @"Frame buffer status: 0x%x", status);
+        [logger logMessage:LogPrefix @"Frame buffer status: 0x%x", status];
         LogGLErrors();
         //When you're done using the texture, delete it. This will set texname to 0 and
         //delete all of the graphics card memory associated with the texture. If you
