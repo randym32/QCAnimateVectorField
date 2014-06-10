@@ -57,10 +57,8 @@ unsigned long upper_power_of_two(unsigned long v)
                      logger: (id<Logging>) logger
 {
     cgl_ctx = _cgl_ctx;
-    
     CGLShareGroupObj sharegroup = CGLGetShareGroup(cgl_ctx);
     gcl_gl_set_sharegroup(sharegroup);
-
     
     // First, try to obtain a dispatch queue that can send work to the
     // GPU in our system.
@@ -78,8 +76,8 @@ unsigned long upper_power_of_two(unsigned long v)
     
     if (!_queue)
     {
-        // There was an error
-        return self;
+        // There was an error, so we can't work
+        return nil;
     }
 
 #if 0
