@@ -3,8 +3,27 @@
 //  OSXGLEssentials
 //
 //  Created by Randall Maas on 5/24/14.
-//
-//
+/*
+    Copyright (c) 2014, Randall Maas
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
 
 #include "glUtil.h"
 #import "BWGLVertexBuffer.h"
@@ -14,6 +33,7 @@
 
 @implementation BWGLVertexBuffer
 {
+    size_t _numPositions;
     size_t vsize;
     void const* vdata;
 }
@@ -30,7 +50,7 @@
     glBindBuffer(GL_ARRAY_BUFFER, posBufferName);
     
     // Allocate and load position data into the VBO
-    glBufferData(GL_ARRAY_BUFFER, arraySize, positions, GL_DYNAMIC_DRAW);// GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, arraySize, positions, GL_DYNAMIC_DRAW);
     
     // Enable the position attribute for this VAO
     glEnableVertexAttribArray(POS_ATTRIB_IDX);
@@ -39,6 +59,7 @@
     GLsizei posTypeSize = GLTypeSize(type);
     vsize = size*posTypeSize;
     vdata = positions;
+    _numPositions = arraySize/vsize;
     
     // Set up parmeters for position attribute in the VAO including,
     //  size, type, stride, and offset in the currenly bound VAO
@@ -158,20 +179,15 @@
     glBindBuffer(GL_ARRAY_BUFFER, posBufferName);
     //Update vertex buffer data
     glBufferSubData( GL_ARRAY_BUFFER, 0, vsize, vdata );
-#if 0
-    glVertexAttribPointer(POS_ATTRIB_IDX, 2, GL_FLOAT, GL_FALSE,
-                          sizeof(vertexStruct), (void *)offsetof(vertexStruct, position));
-    glVertexAttribPointer(POS_ATTRIB_IDX,		// What attibute index will this array feed in the vertex shader (see buildProgram)
-                          size,	                // How many elements are there per position?
-                          type,	                // What is the type of this data?
-                          GL_FALSE,				// Do we want to normalize this data (0-1 range for fixed-pont types)
-                          size*posTypeSize,     // What is the stride (i.e. bytes between positions)?
-                          BUFFER_OFFSET(0));	// What is the offset in the VBO to the position data?
-#endif
 //	LogGLErrors();
     glEnableVertexAttribArray(POS_ATTRIB_IDX);
 
+#if E_EN > 0
     glDrawElements(GL_TRIANGLES, _numElements, elementType, 0);
+#else
+    glDrawArrays(GL_LINES,0, _numPositions);
+    
+#endif
 }
 
 @end
