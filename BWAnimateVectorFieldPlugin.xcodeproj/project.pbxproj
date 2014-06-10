@@ -41,6 +41,8 @@
 		3DC1CCEF1871F239007396DF /* BWGrid-Animate.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC1CCEE1871F239007396DF /* BWGrid-Animate.m */; };
 		3DC1CCF11871F24F007396DF /* particleMove.cl in Sources */ = {isa = PBXBuildFile; fileRef = 3DC1CCF01871F24F007396DF /* particleMove.cl */; };
 		3DC1CCF41871F47E007396DF /* BWGrid+GLRender.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DC1CCF31871F47E007396DF /* BWGrid+GLRender.m */; };
+		3DCF0C61194640EC00A896EE /* BWGLParameter.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DCF0C60194640EC00A896EE /* BWGLParameter.m */; };
+		3DCF0C671946468C00A896EE /* BWGLShader+param.m in Sources */ = {isa = PBXBuildFile; fileRef = 3DCF0C661946468C00A896EE /* BWGLShader+param.m */; };
 		8D5B49B4048680CD000E48DA /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1058C7ADFEA557BF11CA2CBB /* Cocoa.framework */; };
 /* End PBXBuildFile section */
 
@@ -87,6 +89,9 @@
 		3DC1CCF01871F24F007396DF /* particleMove.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; path = particleMove.cl; sourceTree = "<group>"; };
 		3DC1CCF21871F47E007396DF /* BWGrid+GLRender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "BWGrid+GLRender.h"; sourceTree = "<group>"; };
 		3DC1CCF31871F47E007396DF /* BWGrid+GLRender.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "BWGrid+GLRender.m"; sourceTree = "<group>"; };
+		3DCF0C5F194640EC00A896EE /* BWGLParameter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BWGLParameter.h; path = openGL/BWGLParameter.h; sourceTree = "<group>"; };
+		3DCF0C60194640EC00A896EE /* BWGLParameter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BWGLParameter.m; path = openGL/BWGLParameter.m; sourceTree = "<group>"; };
+		3DCF0C661946468C00A896EE /* BWGLShader+param.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = "BWGLShader+param.m"; path = "openGL/BWGLShader+param.m"; sourceTree = "<group>"; };
 		8D5B49B6048680CD000E48DA /* BWAnimateVectorFieldPlugin.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BWAnimateVectorFieldPlugin.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		8D5B49B7048680CD000E48DA /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -112,6 +117,7 @@
 				3D1A6840193CD19B00C7FB65 /* AppConfig.h */,
 				3DA9C9E51871D3E600FF9062 /* Vector Field */,
 				08FB77AFFE84173DC02AAC07 /* Classes */,
+				3DCF0C641946461400A896EE /* openCL */,
 				32C88E010371C26100C91783 /* Other Sources */,
 				3D54FD2A193FC8A700BA7788 /* Shaders */,
 				089C167CFE841241C02AAC07 /* Resources */,
@@ -160,19 +166,7 @@
 		32C88E010371C26100C91783 /* Other Sources */ = {
 			isa = PBXGroup;
 			children = (
-				3D54FD1E193FC1C400BA7788 /* BWGLShader.h */,
-				3D54FD1F193FC1C400BA7788 /* BWGLShader.m */,
-				3D54FD20193FC1C400BA7788 /* BWGLShader+Render.m */,
-				3D54FD1C193F96F900BA7788 /* glFeatures.m */,
-				3D54FD1A193F96BE00BA7788 /* glUtil.h */,
-				3D54FD14193F8EEE00BA7788 /* BWGLVertexArray.h */,
-				3D54FD15193F8EEE00BA7788 /* BWGLVertexArray.m */,
-				3D54FD16193F8EEE00BA7788 /* BWGLVertexBuffer.h */,
-				3D54FD17193F8EEE00BA7788 /* BWGLVertexBuffer.m */,
-				3D1A6842193E1BB700C7FB65 /* glErrorLogging.h */,
-				3D1A6843193E1BB700C7FB65 /* glErrorLogging.m */,
 				16AA5C440A7EEE7300888E31 /* BWAnimateVectorFieldPlugin_Prefix.pch */,
-				3D54FD26193FC57700BA7788 /* glTypesize.m */,
 			);
 			name = "Other Sources";
 			sourceTree = "<group>";
@@ -201,6 +195,28 @@
 				3DC1CCF31871F47E007396DF /* BWGrid+GLRender.m */,
 			);
 			name = "Vector Field";
+			sourceTree = "<group>";
+		};
+		3DCF0C641946461400A896EE /* openCL */ = {
+			isa = PBXGroup;
+			children = (
+				3DCF0C5F194640EC00A896EE /* BWGLParameter.h */,
+				3DCF0C60194640EC00A896EE /* BWGLParameter.m */,
+				3D54FD1E193FC1C400BA7788 /* BWGLShader.h */,
+				3D54FD1F193FC1C400BA7788 /* BWGLShader.m */,
+				3DCF0C661946468C00A896EE /* BWGLShader+param.m */,
+				3D54FD20193FC1C400BA7788 /* BWGLShader+Render.m */,
+				3D54FD14193F8EEE00BA7788 /* BWGLVertexArray.h */,
+				3D54FD15193F8EEE00BA7788 /* BWGLVertexArray.m */,
+				3D54FD16193F8EEE00BA7788 /* BWGLVertexBuffer.h */,
+				3D54FD17193F8EEE00BA7788 /* BWGLVertexBuffer.m */,
+				3D1A6842193E1BB700C7FB65 /* glErrorLogging.h */,
+				3D1A6843193E1BB700C7FB65 /* glErrorLogging.m */,
+				3D54FD1C193F96F900BA7788 /* glFeatures.m */,
+				3D54FD26193FC57700BA7788 /* glTypesize.m */,
+				3D54FD1A193F96BE00BA7788 /* glUtil.h */,
+			);
+			name = openCL;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -284,7 +300,9 @@
 			files = (
 				3D54FD22193FC1C400BA7788 /* BWGLShader+Render.m in Sources */,
 				16BA95420A7EB2EB001E4983 /* BWAnimateVectorFieldPlugIn.m in Sources */,
+				3DCF0C671946468C00A896EE /* BWGLShader+param.m in Sources */,
 				3DA9C9E31871D3CB00FF9062 /* gridBuild.cl in Sources */,
+				3DCF0C61194640EC00A896EE /* BWGLParameter.m in Sources */,
 				3D54FD27193FC57700BA7788 /* glTypesize.m in Sources */,
 				3D54FD21193FC1C400BA7788 /* BWGLShader.m in Sources */,
 				3DA9C9E01871D3CB00FF9062 /* BWGrid.m in Sources */,

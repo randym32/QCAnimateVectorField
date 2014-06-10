@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/glErrorLogging.m"
-            timestampString = "423503179.634259"
+            timestampString = "424097503.335775"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "56"
-            endingLineNumber = "56"
+            startingLineNumber = "73"
+            endingLineNumber = "73"
             landmarkName = "_LogGLErrors()"
             landmarkType = "7">
          </BreakpointContent>
@@ -36,11 +36,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/BWGLShader+Render.m"
-            timestampString = "423613127.963259"
+            timestampString = "424097503.335775"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "19"
-            endingLineNumber = "19"
+            startingLineNumber = "37"
+            endingLineNumber = "37"
             landmarkName = "-setCulling:"
             landmarkType = "5">
          </BreakpointContent>
@@ -52,11 +52,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/BWGLShader.m"
-            timestampString = "423629457.523051"
+            timestampString = "424097503.335775"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "228"
-            endingLineNumber = "228"
+            startingLineNumber = "244"
+            endingLineNumber = "244"
             landmarkName = "-attach:source:"
             landmarkType = "5">
          </BreakpointContent>
@@ -68,11 +68,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/BWGLShader.m"
-            timestampString = "423629457.523051"
+            timestampString = "424097503.335775"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "277"
-            endingLineNumber = "277"
+            startingLineNumber = "298"
+            endingLineNumber = "298"
             landmarkName = "-validate"
             landmarkType = "5">
          </BreakpointContent>
@@ -84,13 +84,29 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/BWGLVertexArray.m"
-            timestampString = "423629828.826527"
+            timestampString = "424099276.96652"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "22"
-            endingLineNumber = "22"
-            landmarkName = "-init:logger:"
+            startingLineNumber = "54"
+            endingLineNumber = "54"
+            landmarkName = "+vertexArray:logger:"
             landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "openGL/glFeatures.m"
+            timestampString = "424099276.96652"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "116"
+            endingLineNumber = "116"
+            landmarkName = "ProbeGLFeatures()"
+            landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
