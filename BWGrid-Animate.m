@@ -25,10 +25,10 @@
 #import "BWGrid-Animate.h"
 #include "particleMove.cl.h"
 #import "BWGLVertexBuffer.h"
+#import "glErrorLogging.h"
 
 @implementation BWGrid (Animate)
 
-#if QUADS_EN < 1
 /** This creates a set of indexes into the vertices.  This is done as as I don't wan't to modify the
     openCL code to handle more vertices, during testing
     @param logger  The object to log with
@@ -65,13 +65,8 @@
 - (void) createVertexArray: (id<Logging>)     logger
 {
     // Put the vertex array into the fold
-#if VERTEX_BUFFER_EN > 0
-    shader.vertices = [[BWGLVertexBuffer alloc] init: cgl_ctx
-                                              logger: logger];
-#else
-    shader.vertices  =  [[BWGLVertexArray alloc] init: cgl_ctx
-                                               logger: logger];
-#endif
+    shader.vertices = [BWGLVertexArray vertexArray: cgl_ctx
+                                            logger: logger];
     // Tell it about the vertices
     [shader.vertices setPositions: (GLubyte*) hostVertices
                              type: GL_FLOAT
@@ -79,10 +74,12 @@
                         arraySize: sizeof(*hostVertices)*_numAllocatedParticles*numVerticesPerParticle
                            logger: logger];
     
+#if E_EN 
     // Create the triangle vertex indices
     [self createVertexIndices: logger];
-}
 #endif
+}
+
 
 /** This is used to change the number of particles in the animation
     @param numParticles  The number particles that should be in the system
@@ -138,44 +135,18 @@
             hostVertices = newHostVertices;
         }
         else
-            NSLog(LogPrefix @"realloc failed");
+            [logger logMessage: LogPrefix @"realloc failed"];
     }
     
     // The number of particles that
     _numParticles= _numAllocatedParticles;
 
-#if QUADS_EN < 1
     // First, create the openGL vertex array
     [self createVertexArray:logger];
     
     // Next, map it into fit within openCL
     vertices = [shader.vertices openCLBufferForPositions];
-#else
-    
-    // Set up the openCL access to the particles
-    vertices    = gcl_malloc(sizeof(*vertices)*_numAllocatedParticles*numVerticesPerParticle, hostVertices, CL_MEM_READ_WRITE|CL_MEM_USE_HOST_PTR|CL_MEM_HOST_READ_ONLY);
-#endif
 
-#if QUADS_EN > 0
-    // Create the texture map vertices
-    BW_free(textureMap);
-    textureMap = valloc(sizeof(float)*_numAllocatedParticles*2*4);
-    for (int I = 0; I < _numAllocatedParticles*4*2;)
-    {
-        textureMap[I++] = 1.0;
-        textureMap[I++] = 1.0;
-        textureMap[I++] = 0;
-        textureMap[I++] = 1.0;
-        textureMap[I++] = 0;
-        textureMap[I++] = 1.0;
-        textureMap[I++] = 1.0;
-        textureMap[I++] = 0;
-    }
-    
-    
-    BW_free(colorMap);
-    colorMap = valloc(sizeof(float*)*4*4*_numAllocatedParticles);
-#endif
     // Randomize the new particles
     [self randomizeParticles: count];
 }
