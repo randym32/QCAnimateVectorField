@@ -26,6 +26,7 @@
 #import "BWGrid.h"
 #import "BWGrid-Animate.h"
 #import "BWGrid+GLRender.h"
+#import "BWGLParameter.h"
 
 unsigned long upper_power_of_two(unsigned long v)
 {
@@ -41,10 +42,13 @@ unsigned long upper_power_of_two(unsigned long v)
 
 
 @implementation BWGrid
+
 /** Initialize the simuluation with a gien number of particles
     @param numParticles  The number of particles in the simulations
     @param width         The number of bins wide
     @param height        The number of bins high
+    @param cgl_ctx       The core graphics GL context
+    @param logger An object to log with
  */
 - (id) initWithNumParticles: (int) numParticles
                       width: (int) width
@@ -101,15 +105,18 @@ unsigned long upper_power_of_two(unsigned long v)
     self.numXBins = width;
     self.numYBins = height;
 #if EXTRA_LOGGING_EN
-    NSLog(LogPrefix @"%d x %d w/ %d particles", width, height, numParticles);
+    [logger logMessage:LogPrefix @"%d x %d w/ %d particles", width, height, numParticles];
 #endif
 
     // Allocate the seed
     seed =gcl_malloc(sizeof(*seed), NULL, CL_MEM_READ_WRITE);
 
-#if QUADS_EN < 1
+    // Load the shader program
     [self loadShaders: logger];
-#endif
+    
+    // Tell the program the size of the output
+    [shaderRenderSize setSize: NSMakeSize(width, height)
+                       logger: logger];
 
     // Allocate the particles in the system
     [self setNumParticles: numParticles
@@ -122,12 +129,7 @@ unsigned long upper_power_of_two(unsigned long v)
 
 - (void)dealloc
 {
-#if QUADS_EN > 0
-    BW_free(colorMap);
-    BW_free(textureMap);
-    BW_free(background);
     BW_free(hostVertices);
-#endif
     BW_gcl_free(seed);
     BW_gcl_free(self.vectorField);
     BW_gcl_free(vertices);

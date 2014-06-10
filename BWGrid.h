@@ -30,7 +30,11 @@
 #import "BWGLShader.h"
 
 #define FormatCL CL_BGRA
+#if E_EN > 0
 #define numVerticesPerParticle (4)
+#else
+#define numVerticesPerParticle (2)
+#endif
 
 @interface BWGrid: NSObject
 {
@@ -43,15 +47,12 @@
     cl_float2* vertices;
     /// The CPU accessible vertices
     cl_float2* hostVertices;
-    
-#if QUADS_EN < 1
+
+    /// The GL vertex and fragment shader that shades the particles
     BWGLShader* shader;
-#else
-    
-    /// The mapping of vertices to the texture
-    float* textureMap;
-    float* colorMap;
-#endif
+    /// The parameter access to the shader input variables
+    BWGLParameter* shaderColor;
+    BWGLParameter* shaderRenderSize;
     
     /// The number if particles to simulate
     int _numParticles;
@@ -64,17 +65,6 @@
 
     /// The seed for the random steps
     cl_ulong* seed;
-
-#if QUADS_EN > 0
-    /// This is the buffer to hold the frame
-    void* background;
-    
-    // backup colors
-    float _colors[4];
-    
-    // Buffer to hold the texture
-    uint8_t texture[4*32*32];
-#endif
 }
 
 /// The number of bins in the x axis
@@ -94,11 +84,12 @@
     @param numParticles  The number of particles in the simulations
     @param width         The number of bins wide
     @param height        The number of bins high
+    @param cgl_ctx       The core graphics GL context
 */
-- (id) initWithNumParticles: (int)    numParticles
+- (id) initWithNumParticles: (int) numParticles
                       width: (int) width
                      height: (int) height
-                    context: (CGLContextObj) cgl_ctxt
+                    context: (CGLContextObj) cgl_ctx
                      logger: (id<Logging>) logger
                            ;
 
