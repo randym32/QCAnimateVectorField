@@ -3,17 +3,49 @@
 //  OSXGLEssentials
 //
 //  Created by Randall Maas on 5/24/14.
-//
-//
+/*
+    Copyright (c) 2014, Randall Maas
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+*/
 
 #import "BWGLVertexArray.h"
 #include "glUtil.h"
 #import "glErrorLogging.h"
 #import <OpenCL/opencl.h>
-
-GLuint m_characterNumElements;
+#import "BWGLVertexBuffer.h"
 
 @implementation BWGLVertexArray
++(instancetype) vertexArray:(CGLContextObj)cgl_ctx
+                      logger: (id<Logging>) logger
+{
+    // The use of vertex array vs buffer depends on the GL version
+    BWGLVertexArray* ret;
+#if VERTEX_BUFFER_EN > 0
+    ret = [BWGLVertexBuffer alloc];
+#else
+    ret = [BWGLVertexArray alloc];
+#endif
+    return [ret init: cgl_ctx
+              logger: logger];
+}
+
 
 - (id)  init: (CGLContextObj) _cgl_ctx
       logger: (id<Logging>) logger
@@ -86,6 +118,10 @@ GLuint m_characterNumElements;
 }
 
 
+/** Create a pointer suitable for use in openCL
+    @returns pointer to the buffer, suitable for openCL
+    Note: you must call gcl_free() on the pointer when done.
+ */
 - (void*) openCLBufferForPositions
 {
     // Next, map it into fit with the
