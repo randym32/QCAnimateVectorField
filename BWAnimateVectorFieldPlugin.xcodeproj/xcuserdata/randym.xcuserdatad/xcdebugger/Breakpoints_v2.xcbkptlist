@@ -84,11 +84,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "openGL/BWGLVertexArray.m"
-            timestampString = "424099276.96652"
+            timestampString = "424149756.621083"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "54"
-            endingLineNumber = "54"
+            startingLineNumber = "57"
+            endingLineNumber = "57"
             landmarkName = "-init:logger:"
             landmarkType = "5">
          </BreakpointContent>
@@ -96,17 +96,17 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            shouldBeEnabled = "Yes"
+            shouldBeEnabled = "No"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "openGL/glFeatures.m"
-            timestampString = "424099276.96652"
+            filePath = "BWGrid+GLRender.m"
+            timestampString = "424189580.005063"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "116"
-            endingLineNumber = "116"
-            landmarkName = "ProbeGLFeatures()"
-            landmarkType = "7">
+            startingLineNumber = "131"
+            endingLineNumber = "131"
+            landmarkName = "-drawParticles:"
+            landmarkType = "5">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
