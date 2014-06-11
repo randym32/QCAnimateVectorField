@@ -32,6 +32,10 @@
 #import "BWGLVertexBuffer.h"
 
 @implementation BWGLVertexArray
+/** Creates a vertex array or buffer (automatically which works for the sytem
+    @param cgl_ctx   The core graphics GL context
+    @param logger  The object to log with
+*/
 +(instancetype) vertexArray:(CGLContextObj)cgl_ctx
                       logger: (id<Logging>) logger
 {
@@ -48,7 +52,7 @@
 
 
 - (id)  init: (CGLContextObj) _cgl_ctx
-      logger: (id<Logging>) logger
+      logger: (id<Logging>)   logger
 {
     if (!(self = [self init]))
         return nil;
@@ -100,14 +104,20 @@
         
     // Finally, delete the VAO
     glDeleteVertexArrays(1, &vertexArray);
-        
-//    LogGLErrors();
 }
 
+
+/** This sets the indices (to the vertices) used in the shape
+    @param type      The data type of the elements in each of the index's
+    @param size      The number of elements in each index
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int) setElements: (GLubyte *) elements
-         numElements: (unsigned) numElements
-                type: (GLenum) type
-           arraySize: (size_t) arraySize
+        numElements: (unsigned) numElements
+           dataType: (GLenum) type
+          arraySize: (size_t) arraySize
              logger: (id<Logging>) logger
 {
     _numElements = numElements;
@@ -118,8 +128,8 @@
 }
 
 
-/** Create a pointer suitable for use in openCL
-    @returns pointer to the buffer, suitable for openCL
+/** Create a pointer suitable for use in openCL from the positions array
+    @returns null on error, pointer to the buffer, suitable for openCL
     Note: you must call gcl_free() on the pointer when done.
  */
 - (void*) openCLBufferForPositions
@@ -129,8 +139,15 @@
 }
 
 
+/** This sets the vertices used in the shape
+    @param type      The data type of the elements in each of the vertex elements
+    @param size      The number of elements in each vertex
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)  setPositions: (GLubyte const*) positions
-                 type: (GLenum) type
+             dataType: (GLenum) type
                  size: (GLuint) size
             arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
@@ -155,10 +172,17 @@
 }
 
 
+/** This sets the normal vectors used in the shape
+    @param type      The data type of the elements in each of the normal vectors
+    @param size      The number of elements in each normal vector
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)    setNormals: (GLubyte const*) normals
-                 type: (GLenum) type
-                 size:(GLuint) size
-            arraySize:(size_t) arraySize
+             dataType: (GLenum) type
+                 size: (GLuint) size
+            arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
 {
     // Enable the normal attribute for this VAO
@@ -181,10 +205,17 @@
 }
 
 
+/** This sets the texture coordinate vectors used in the shape
+    @param type      The data type of the elements in each of the texture vectors
+    @param size      The number of elements in each texture vector
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)  setTexCoords: (GLubyte const*) coords
-                 type: (GLenum) type
-                 size:(GLuint) size
-            arraySize:(size_t) arraySize
+             dataType: (GLenum) type
+                 size: (GLuint) size
+            arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
 {
     // Enable the texcoord attribute for this VAO
@@ -207,10 +238,21 @@
 }
 
 
+/// This has the vertices attrached / drawn to the render buffer
 - (void) draw
+{
+    //GL_TRIANGLES
+    [self draw:GL_LINES];
+}
+
+
+/** This has the vertices attached / drawn to the render buffer
+    @param typeOfPrimitives  This is the way that the vertices are connected to form a fragment
+ */
+- (void) draw:(GLenum) typeOfPrimitives
 {
 	// Bind our vertex array object
 	glBindVertexArray(vertexArray);
-    glDrawElements(GL_TRIANGLES, _numElements, elementType, _elements);
+    glDrawElements(typeOfPrimitives, _numElements, elementType, _elements);
 }
 @end
