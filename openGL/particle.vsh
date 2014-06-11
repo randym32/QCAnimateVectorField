@@ -7,7 +7,7 @@ varying vec2 Position_coord;
 void main() 
 {
     gl_Position = gl_ModelViewProjectionMatrix * inPosition;
-    Position_coord = (gl_Position.xy/gl_Position.w+1.0)*0.5* inRenderSize;//vec2(2048.0,1024.0);//
+    Position_coord = (gl_Position.xy/gl_Position.w+1.0)*0.5* inRenderSize;
 //    gl_PointSize future compute on speed?
 }
 

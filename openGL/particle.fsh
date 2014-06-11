@@ -2,7 +2,6 @@
 
 /// The position in pixel coordinates
 varying vec2 Position_coord;
-// todo add in the view size
 uniform vec4 inColor1;
 
 const vec4 alphaColor=vec4(0.0);
