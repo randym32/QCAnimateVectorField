@@ -30,7 +30,8 @@
 /// Setting this to 1 forces texture sizes to be a power of 2
 #define POWER_OF_2_SIZE_EN  (0)
 
-#define E_EN (0)
+
+/// This is enabled to stop the high speed particles that are flying over the pole and look like missiles
 #define SCISSOR_EN (0)
 
 
