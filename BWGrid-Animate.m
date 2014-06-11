@@ -29,39 +29,9 @@
 
 @implementation BWGrid (Animate)
 
-/** This creates a set of indexes into the vertices.  This is done as as I don't wan't to modify the
-    openCL code to handle more vertices, during testing
+/** This creates the vertiex array to hold the beginning and ending point of each line
     @param logger  The object to log with
- */
-- (void) createVertexIndices: (id<Logging>)      logger
-{
-    // I'm using 32 bits here.. if we cap the number of particles to less than 65K, we can switch to 16bit
-    unsigned numIndices = 6*_numParticles;
-    unsigned* indices = malloc(numIndices*sizeof(*indices));
-    unsigned* iPtr = indices;
-    
-    // Go thru and create the indices that wind the triangles in the same way
-    //  (v0, v1, v2)
-    //  (v0, v2, v3)
-    for (unsigned I=0, J=0; I < _numParticles; I++, J+=4)
-    {
-        *iPtr++ = 0+J; *iPtr++ = 1+J; *iPtr++ = 2+J;
-        *iPtr++ = 0+J; *iPtr++ = 2+J; *iPtr++ = 3+J;
-    }
-    
-    // Pass these off to the graphics subsystem
-    if ([shader.vertices setElements: (GLubyte*) indices
-                         numElements: numIndices
-                                type: GL_UNSIGNED_INT
-                           arraySize: sizeof(*indices)*numIndices
-                              logger: logger])
-    {
-        // we don't retain the indices
-        free(indices);
-    }
-}
-
-
+*/
 - (void) createVertexArray: (id<Logging>)     logger
 {
     // Put the vertex array into the fold
@@ -69,20 +39,16 @@
                                             logger: logger];
     // Tell it about the vertices
     [shader.vertices setPositions: (GLubyte*) hostVertices
-                             type: GL_FLOAT
+                         dataType: GL_FLOAT
                              size: 2
                         arraySize: sizeof(*hostVertices)*_numAllocatedParticles*numVerticesPerParticle
                            logger: logger];
-    
-#if E_EN 
-    // Create the triangle vertex indices
-    [self createVertexIndices: logger];
-#endif
 }
 
 
 /** This is used to change the number of particles in the animation
     @param numParticles  The number particles that should be in the system
+    @param logger  The object to log with
  
     Note: if the number of particles is more than were allocated, the system may toss out the
     old points
