@@ -30,6 +30,9 @@
 @class BWGLShader;
 @protocol Logging;
 
+
+/** This is used by things that are manipulated in a programmatic fashion and then set
+    the values. */
 @protocol GLVariable
 /** Sets the GL variable to this matrix value
     @param varIdx The uniform index to the variable to set
@@ -76,7 +79,7 @@
     @param logger An object to log with
     @returns 0 on succes, otherwise error
  */
-- (int) setSize: (NSSize)     value
-         logger: (id<Logging>)    logger;
+- (int) setSize: (NSSize)      value
+         logger: (id<Logging>) logger;
 
 @end

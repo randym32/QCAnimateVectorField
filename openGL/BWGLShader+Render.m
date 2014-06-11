@@ -43,6 +43,10 @@
 }
 
 
+/** This is used to evaluate the shader (targeting the current render buffer)
+    @param logger    The object to log with
+*/
+
 - (void) evaluate: (id<Logging>) logger
 {
     // Set up to use the shader.  We do this before as f may set some variables

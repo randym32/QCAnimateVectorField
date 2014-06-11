@@ -42,7 +42,6 @@
 
 
 /** Stroke each of the particle motions
-    @param cgl_ctx The open GL context
     @param logger  The object to log with
  */
 - (GLuint) draw: (id<Logging>) logger

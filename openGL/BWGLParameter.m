@@ -45,6 +45,7 @@
 /** Initialize
     @param shader    The prgram
     @param fieldName The name of the field too look up
+    @param cgl_ctx   The core graphics GL context
  */
 - (id)initWithShader: (BWGLShader*) shader
        parameterName: (NSString*)   fieldName

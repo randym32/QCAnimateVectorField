@@ -49,14 +49,15 @@
 
 /** Initializes the shader program
     @param cgl_ctx   The core graphics GL context
+    @param logger    The object to log with
     @returns nil on error, otherwise a reference to the object
 */
 - (id) initWithVertexShader: (NSObject*) vertexShaderSrc
              fragmentShader: (NSObject*) fragmentShaderSrc
-                 withNormal: (BOOL) hasNormal
-               withTexcoord: (BOOL) hasTexcoord
-                    context:  (CGLContextObj) cgl_ctx
-                     logger: (id<Logging>) logger
+                 withNormal: (BOOL)      hasNormal
+               withTexcoord: (BOOL)      hasTexcoord
+                    context: (CGLContextObj) cgl_ctx
+                     logger: (id<Logging>)   logger
 ;
 
 /** Checks that the program and its settings are reasonable.
@@ -86,7 +87,9 @@
 /// This is used to set the vertex culling
 - (void) setCulling:(GLenum) mode;
 
-/// This is used to evaluate the shader 
+/** This is used to evaluate the shader (targeting the current render buffer)
+    @param logger    The object to log with
+*/
 - (void) evaluate: (id<Logging>) logger;
 
 @end

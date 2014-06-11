@@ -288,7 +288,7 @@ char const* toCString(NSObject* obj)
         return false;
     needsValidation = false;
 
-    // todo: validate after the frame buffer is
+    // Validate after the frame buffer is attached
     glValidateProgram(prgName);
 	glGetProgramiv(prgName, GL_INFO_LOG_LENGTH, &logLength);
 	if (logLength > 0)

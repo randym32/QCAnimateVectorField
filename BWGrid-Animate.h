@@ -30,12 +30,13 @@
 @interface BWGrid (Animate)
 /** This is used to change the number of particles in the animation
     @param numParticles  The number particles that should be in the system
- 
+    @param logger       The object to log with
+
     Note: if the number of particles is more than were allocated, the system may toss out the
    old points
 */
-- (void) setNumParticles : (int) numParticles
-                   logger: (id<Logging>)     logger;
+- (void) setNumParticles : (int)         numParticles
+                   logger: (id<Logging>) logger;
 
 /** This is used to randomize the num next particles
     @param numParticles The number of particles to initialize

@@ -30,11 +30,7 @@
 #import "BWGLShader.h"
 
 #define FormatCL CL_BGRA
-#if E_EN > 0
-#define numVerticesPerParticle (4)
-#else
 #define numVerticesPerParticle (2)
-#endif
 
 @interface BWGrid: NSObject
 {
@@ -85,6 +81,7 @@
     @param width         The number of bins wide
     @param height        The number of bins high
     @param cgl_ctx       The core graphics GL context
+    @param logger        The object to log with
 */
 - (id) initWithNumParticles: (int) numParticles
                       width: (int) width
