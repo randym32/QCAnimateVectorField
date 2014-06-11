@@ -33,14 +33,21 @@
 
 @implementation BWGLVertexBuffer
 {
+    /// The number of positions in the vertex array
+    /// (The number of elements can be larger, as it may reuse vertices)
     size_t _numPositions;
-    size_t vsize;
-    void const* vdata;
 }
 
 
+/** This sets the vertices used in the shape
+    @param type      The data type of the elements in each of the vertex elements
+    @param size      The number of elements in each vertex
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)  setPositions: (GLubyte const*) positions
-                 type: (GLenum) type
+             dataType: (GLenum) type
                  size: (GLuint) size
             arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
@@ -57,9 +64,8 @@
     
     // Get the size of the position type so we can set the stride properly
     GLsizei posTypeSize = GLTypeSize(type);
-    vsize = size*posTypeSize;
-    vdata = positions;
-    _numPositions = arraySize/vsize;
+    size_t elementSize = size*posTypeSize;
+    _numPositions = arraySize/elementSize;
     
     // Set up parmeters for position attribute in the VAO including,
     //  size, type, stride, and offset in the currenly bound VAO
@@ -76,8 +82,15 @@
 }
 
 
+/** This sets the normal vectors used in the shape
+    @param type      The data type of the elements in each of the normal vectors
+    @param size      The number of elements in each normal vector
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)    setNormals: (GLubyte const*) normals
-                 type: (GLenum) type
+             dataType: (GLenum) type
                  size: (GLuint) size
             arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
@@ -112,8 +125,15 @@
 }
 
 
+/** This sets the texture coordinate vectors used in the shape
+    @param type      The data type of the elements in each of the texture vectors
+    @param size      The number of elements in each texture vector
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)  setTexCoords: (GLubyte const*) coords
-                 type: (GLenum) type
+             dataType: (GLenum) type
                  size: (GLuint) size
             arraySize: (size_t) arraySize
                logger: (id<Logging>) logger
@@ -148,9 +168,16 @@
 }
 
     
+/** This sets the indices (to the vertices) used in the shape
+    @param type      The data type of the elements in each of the index's
+    @param size      The number of elements in each index
+    @param arraySize The number of bytes in the in array
+    @param logger    The object to log with
+    @returns 0 if the caller should not free the buffer; 1 if the caller may
+ */
 - (int)  setElements: (GLubyte *) elements
          numElements: (unsigned) numElements
-                type: (GLenum) type
+            dataType: (GLenum) type
            arraySize: (size_t) arraySize
               logger: (id<Logging>) logger
 {
@@ -171,22 +198,24 @@
 }
 
 
-- (void) draw
+/** This has the vertices attached / drawn to the render buffer
+    @param typeOfPrimitives  This is the way that the vertices are connected to form a fragment
+ */
+- (void) draw:(GLenum) typeOfPrimitives
 {
 	// Bind our vertex array object
 	glBindVertexArray(vertexArray);
-    //rcm
     glBindBuffer(GL_ARRAY_BUFFER, posBufferName);
     //Update vertex buffer data
-    glBufferSubData( GL_ARRAY_BUFFER, 0, vsize, vdata );
-//	LogGLErrors();
+    // No, don't.
+    // Using this wipes out the data... and not needed when we're working with openCL linked ata bufers
+//    glBufferSubData( GL_ARRAY_BUFFER, 0, elementSize*_numPositions, vdata );
     glEnableVertexAttribArray(POS_ATTRIB_IDX);
 
 #if E_EN > 0
-    glDrawElements(GL_TRIANGLES, _numElements, elementType, 0);
+    glDrawElements(typeOfPrimitives, _numElements, elementType, 0);
 #else
-    glDrawArrays(GL_LINES,0, _numPositions);
-    
+    glDrawArrays(typeOfPrimitives,0, _numPositions);
 #endif
 }
 
