@@ -126,11 +126,10 @@
     glAlphaFunc(GL_GREATER, 0.0f);
     glBlendFunc(GL_SRC_ALPHA, GL_DST_ALPHA);
     glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_BLEND);
-#if E_EN < 1
 //    glEnable(GL_PROGRAM_POINT_SIZE_EXT);
 //    glPointSize(POINT_SIZE);
     glLineWidth(LINE_WIDTH);
-#endif
+
     // Run the shader on the particle vertices
     [shader evaluate:logger];
     // Check for errors to make sure all of our setup went ok
