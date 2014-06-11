@@ -53,12 +53,10 @@ float2 particleRandomize(
 {
     float n = (random(seed, numYBins*10-1)/(numYBins*10.0f))*M_PI;
     float c = cos(n);
-    float y = c*90.0f+180.0f;
-    if (y >= 180.0f) y -= 180.0f;
-    y *= numYBins/180.0f;
-    return (float2)( random(seed, numXBins*10-1)/10.0
-                   , y
-                   );
+    float y = c*88.0f+91.0f;
+    y *= (numYBins-2.0)/180.0f;
+    float x =random(seed, (numXBins-1)*10)/10.0;
+    return (float2){x,y};
 }
 
 
@@ -81,22 +79,11 @@ __kernel void particleInit( __global float2*   vertex   // position of each part
     // particle has escaped the grid, never to return...
     float2 position = particleRandomize(numXBins, numYBins, seed);
 
-
-    
     // Path from (x,y) to (xt,yt) is visible, so add this particle to the appropriate draw bucket.
-#if 0
-    // The positions are actually vertices (4)
-    int idx4 = 4*idx;
-#else
-    // The positions are actually vertices (4)
-    int idx4 = 2*idx;
-#endif
-    vertex[idx4  ] = position;
-    vertex[idx4+1] = position;
-#if 0
-    vertex[idx4+2] = position;
-    vertex[idx4+3] = position;
-#endif
+    // The positions are actually vertices (2)
+    int idx2 = 2*idx;
+    vertex[idx2  ] = position;  // tail
+    vertex[idx2+1] = position;  // head
 }
 
 
@@ -119,85 +106,58 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
     // The global id of the work item.  (the index i)
     int idx = get_global_id(0);
 
-#if 0
     // The positions are actually vertices (4)
-    int idx4 = 4*idx;
-#else
-    // The positions are actually vertices (4)
-    int idx4 = 2*idx;
-#endif
+    int idx2 = 2*idx;
     
     // The left two are the key ones
     // Get the particle position
-    float2 position = vertex[idx4]+dT*(vertex[idx4+1]-vertex[idx4]);
-    float m;
-    float2 position_t, position_t2;
-    float2 position2;
-    float dX=0;
+    float2 position = vertex[idx2]+dT*(vertex[idx2+1]-vertex[idx2]);
+    float2 position_t;
+    // This to handle wrap around on either edge as elegantly as possible
     if (position.x <= 0.0)
     {
         // We wrapped around
-        float2 p = vertex[idx4+1];
+        float2 p = vertex[idx2+1];
 
         position.x = numXBins-0.01;
         // We could calculate the actual y position but this works better for now
         position.y = (position.y+p.y)*0.5;
-        position2.x= numXBins+0.2;
-        position2.y= position.y+0.9;
     }
-    else if (position.x >= numXBins)
+    else if (position.x >= numXBins-0.1)
     {
-        float2 p = vertex[idx4+1];
+        float2 p = vertex[idx2+1];
         position.x = 0.0;
         // We could calculate the actual y position but this works better for now
         position.y = (position.y+p.y)*0.5;
-        position2.x= 0.2;
-        position2.y= position.y+0.9;
-        dX = -0.5;
-    }
-    else
-    {
-        position2 = (float2)(position.x+1.0f, position.y+1.0f);
     }
 
-    if (position.y >= numYBins || position.y < 0)
+    // Did the particle go out of bounds?
+    if (position.y< 0.0 || position.y >= numYBins-1.0)
     {
         // The particle is moving too fast or too slow; get rid of it
         position_t = particleRandomize(numXBins, numYBins, seed);
-        position_t2= position_t;
         position = position_t;
-        position2= position_t;
     }
     else
     {
         // vector at current position
         float2 v = vectorField[(int)position.x + ((int) position.y)*numXBins];
-        m = v.x*v.x + v.y*v.y;
+        float m = v.x*v.x + v.y*v.y;
 
         position_t = position + v;
-        position_t2= position2+ v;
-        position.x += dX;
-
-        position_t2.x+=0.5f;
         
         if (m <1.0)
         {
             // The particle is moving too fast or too slow; get rid of it
             position_t = particleRandomize(numXBins, numYBins, seed);
-            position_t2= position_t;
             position = position_t;
-            position2= position_t;
         }
     }
 
     
     // Path from (x,y) to (xt,yt) is visible, so add this particle to the appropriate draw bucket.
-    vertex[idx4]   = position;
-    vertex[idx4+1] = position_t;
-#if 0
-    vertex[idx4+2] = position_t2;
-    vertex[idx4+3] = position2;
-#endif
+    vertex[idx2]   = position;
+    vertex[idx2+1] = position_t;
 }
 
 
