@@ -133,6 +133,7 @@
 #endif
     if (!vary || !uary)
         return;
+    
 
 #if EXTRA_LOGGING_EN
     NSLog(LogPrefix @"%s,%d: allocating grid", __FILE__, __LINE__);
@@ -143,10 +144,11 @@
 
     // Allocate enough for the temporary data grid
     bool isContinuous = floor(srcSize.x * delta.x) >= 360;
+    int srcStride = srcSize.x+(isContinuous? 1:0);
+    
     // Continuous grids wrap around and have an extra column
     // BUG: see the 1+srcSize.y?  that means I'm going off the edge
-    cl_float2* srcField = gcl_malloc(sizeof(*srcField)*(isContinuous? srcSize.x+1:srcSize.x)*(1+srcSize.y), NULL, CL_MEM_READ_WRITE);
-    
+    cl_float2* srcField = gcl_malloc(sizeof(*srcField)*srcStride*(1+srcSize.y), NULL, CL_MEM_READ_WRITE);
 
     // Creating the first stage grid
     // Dispatch the kernel block using one of the dispatch_ commands and the
@@ -189,16 +191,15 @@
                    , srcField
                    );
     });
+    
 
-    // We need to update the origing now, as we have rotated the view
+    // We need to update the origin now, as we have rotated the view
     origin.x += 90.0;
-    if (isContinuous)
-    {
-        srcSize . x++;
-    }
+    // Update the number of columns that are actually in the grid at this time
+    srcSize.x = srcStride;
 
-    // Allocate the memory for the vecitor field
-    cl_float2* myVectorField = gcl_malloc(sizeof(*myVectorField)*self.numXBins*self.numYBins, 0, CL_MEM_READ_WRITE);
+    // Allocate the memory for the vector field
+    cl_float2* myVectorField = gcl_malloc(sizeof(*myVectorField)*numXBins*numYBins, 0, CL_MEM_READ_WRITE);
 
     // Interpolate to the target field size
 #if EXTRA_LOGGING_EN
@@ -213,7 +214,7 @@
             // that all the data is processed, this is 0
             // in the test case.                   // 7
             
-            {self.numXBins, self.numYBins, 0},    // The global range—this is how many items
+            {numXBins, numYBins, 0},    // The global range—this is how many items
             // IN TOTAL in each dimension you want to
             // process.
             
@@ -226,10 +227,10 @@
             // NUM_VALUE / wgs workgroups.
         };
 
-        cl_uint2 tgtSize = {self.numXBins, self.numYBins};
+        cl_uint2 tgtSize = {numXBins, numYBins};
         gridInterpolate_kernel(&range2, srcSize, srcField,
                                origin, delta, velocityScale,
-                               tgtSize, myVectorField);
+                               tgtSize, numXBins, myVectorField);
     });
 
     self.vectorField = myVectorField;
