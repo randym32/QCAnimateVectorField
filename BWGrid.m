@@ -100,8 +100,8 @@ unsigned long upper_power_of_two(unsigned long v)
 #endif
 
     // Save the size
-    self.numXBins = width;
-    self.numYBins = height;
+    numXBins = self.width = width;
+    numYBins = self.height= height;
 #if EXTRA_LOGGING_EN
     [logger logMessage:LogPrefix @"%d x %d w/ %d particles", width, height, numParticles];
 #endif

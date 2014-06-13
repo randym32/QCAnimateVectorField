@@ -271,8 +271,8 @@ NSDictionary* attributesForPort = nil;
     if (texName)
     {
         provider= [context outputImageProviderFromTextureWithPixelFormat: HostFormat
-                                                              pixelsWide: field.numXBins
-                                                              pixelsHigh: field.numYBins
+                                                              pixelsWide: field.width
+                                                              pixelsHigh: field.height
                                                                     name: texName
                                                                  flipped: YES
                                                          releaseCallback: _TextureReleaseCallback

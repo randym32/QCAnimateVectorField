@@ -166,7 +166,7 @@
         // Perform the particle movement
         particleInit_kernel(&range
                            , vertices
-                           , self.numXBins, self.numYBins,
+                           , numXBins, numYBins,
                             seed
                             );
         
@@ -210,7 +210,7 @@
         particleMove_kernel(&range
                             , vertices
                             , 0.0900f
-                            , self.numXBins, self.numYBins
+                            , numXBins, numYBins
                             , self.vectorField
                             , seed
                             );
