@@ -98,18 +98,24 @@
     
     /* Setup OpenGL states */
     glGetIntegerv(GL_VIEWPORT, saveViewport);
-    glViewport(0, 0, self.numXBins, self.numYBins);
 #if SCISSOR_EN > 0
     // Enable clipping (aka scissor)
     glEnable(GL_SCISSOR_TEST);
-    glScissor(0, 0, self.numXBins, self.numYBins);
+    glScissor(0, 0, self.width, self.height);
 #endif
     glGetIntegerv(GL_MATRIX_MODE, &saveMode);
 
+    // Configure projection matrix to zoom in (in the source "world") into the part we're going to render
     glMatrixMode(GL_PROJECTION);
+    // Save the matrix for later
     glPushMatrix();
     glLoadIdentity();
-    glOrtho(0, self.numXBins,  0, self.numYBins, -1, 1);
+    // if the source size and the target size are the same:
+    glOrtho( 0.0, self.width
+            , 0.0, self.height, -1, 1);
+    
+    glViewport(0, 0, self.width, self.height);
+
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     glLoadIdentity();
@@ -142,14 +148,19 @@
     /* Restore OpenGL states */
     glMatrixMode(GL_MODELVIEW);
     glPopMatrix();
+
+    // Restore projection matrix
     glMatrixMode(GL_PROJECTION);
     glPopMatrix();
+
     glMatrixMode(saveMode);
 #if SCISSOR_EN > 0
     glDisable(GL_SCISSOR_TEST);
 #endif
     glViewport(saveViewport[0], saveViewport[1], saveViewport[2], saveViewport[3]);
 }
+
+
 
 /** Draw the scene
     @param logger  The object to log with
@@ -176,7 +187,7 @@
     glTexParameteri(texType, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Define the size and initial contents of the texture buffer.
-    glTexImage2D(texType, 0, GL_RGBA8, self.numXBins, self.numYBins, 0,
+    glTexImage2D(texType, 0, GL_RGBA8, self.width, self.height, 0,
                  GL_BGRA, GL_UNSIGNED_BYTE, NULL);
     LogGLErrors();
     
