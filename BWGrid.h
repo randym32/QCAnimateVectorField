@@ -34,6 +34,14 @@
 
 @interface BWGrid: NSObject
 {
+    /// The number of the number of columns in the velocity field.
+    /// This may be larger than width.
+    int numXBins;
+    
+    /// The number of the number of rows in the velocity field.
+    /// This may be larger than height.
+    int numYBins;
+
     /// The openGL context
     CGLContextObj cgl_ctx;
     /// The Grand Central Dispatch queue
@@ -63,18 +71,14 @@
     cl_ulong* seed;
 }
 
-/// The number of bins in the x axis
-@property int numXBins;
-
-/// The number of bins in the y axis
-@property int numYBins;
+/// The width of the texture.  This may be smaller than numXBins.
+@property int width;
+/// The height of the texture.  This may be smaller than numYBins.
+@property int height;
 
 /// The vectors in space, organized as bins in a rectilinear grid
 /// Each vector is represented as unit direction, and magnitude.
 @property cl_float2* vectorField;
-
-/// The max magnitude
-@property float maxMagnitude;
 
 /** Initialize the simuluation with a gien number of particles
     @param numParticles  The number of particles in the simulations
