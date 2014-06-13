@@ -94,6 +94,7 @@ float2 interpolate(float2 coord
     int fi = floor(coord.x);
     // calculate the latitude (y) index withing the source field
     int fj = floor(coord.y);
+
     uint ci = min(fi+1u, srcSize.x-1u);
     uint cj = min(fj+1u, srcSize.y-1u);
 
@@ -103,7 +104,7 @@ float2 interpolate(float2 coord
     float2 g00 = srcField[rowOfs+fi];
     float2 g10 = srcField[rowOfs+ci];
 
-    rowOfs += srcSize.x;
+    rowOfs = cj*srcSize.x;
     float2 g01 = srcField[rowOfs+fi];
     float2 g11 = srcField[rowOfs+ci];
     // All four points found, so use bilinear interpolation to calculate the wind vector.
@@ -145,7 +146,7 @@ float4 distortion(float2 latlon)
     
     // Meridian scale factor (see Snyder, equation 4-3), where R = 1. This handles issue where length of 1º λ
     // changes depending on v. Without this, there is a pinching effect at the poles.
-    float k = cos(latlon.y / 360.0 * M_PI *2.0);
+    float k = cos(latlon.y * M_PI *2.0 / 360.0);
     
     return (float4)(
                     (pu.x - latlon.x) / hu / k,
@@ -179,13 +180,20 @@ float2 distort(float2 latlon, float scale, float2 wind)
     create the data grid by interpolating these, and handling the metric distance for the
     projection
 
-    @param gridSize   The number of elements in the original grid
-    @param srcGrid    The internal representation of the u-v grid
+    @param srcSize    The number of elements in the original grid
+    @param srcField   The internal representation of the u-v grid
     @param origin     The origin of the coordinate space (e.g., 0.0E, 90.0N)
     @param delta      The distance between grid points (e.g., 2.5 deg lon, 2.5 deg lat)
     @param velocityScale The ?
-    @param numXBins   The number of bins wide the out grid is
-    @param vectorField The grid modified for animation
+    @param tgtSize    The number of bins wide and high the tgtField is (in the part that corresponds to the srcField)
+    @param tgtStride     The number of entries per row (there may be more than in tgtSize)
+    @param tgtField   The field modified for animation
+ 
+    tgtField is indexed as
+       x + y * stride
+    stride == the number of internal grid columns.
+    stride is >= the number of ideal columns
+    The extra columns on the right (or left) of the main one are duplicated, to ease the math
 */
 kernel void gridInterpolate(
                              uint2  srcSize
@@ -194,6 +202,7 @@ kernel void gridInterpolate(
                            , float2 delta
                            , float velocityScale
                            , uint2 tgtSize
+                           , uint  tgtStride
                            , __global float2* tgtField
                            )
 {
@@ -212,8 +221,8 @@ kernel void gridInterpolate(
 
     // Second, calculate the lat/lon of the wind vector
     float2 latlon;
-    latlon . x = srcPoint.x - origin.x;
-    latlon . y  =  origin.y - srcPoint.y;
+    latlon . x = (srcPoint.x -   origin.x);
+    latlon . y  =  (origin.y - srcPoint.y);
     
     // If the wind vector is valid, use the grid distoration
     // Calculate the distortion from the particular projection onto the grid
@@ -221,23 +230,28 @@ kernel void gridInterpolate(
 
     // The source data often starts at Longitude 0, while the land maps start at -180.
     // Shift this to match those maps
-    tgtField[tgtPoint.x +     tgtPoint.y*tgtSize.x] = wind;
+    tgtField[tgtPoint.x +     tgtPoint.y*tgtStride] = wind;
 }
 
 
-
 /** Build the internal form of the grid
-
-    @param uData      The grid of the u component's of the vector
-    @param vData      The grid of the v component's of the vector
-    @param gridSize   The number of elements in the original grid
-    @param delta      The distance between grid points (e.g., 2.5 deg lon, 2.5 deg lat)
-    @param srcGrid    The internal representation of the u-v grid
+    @param uData       The grid of the u component's of the vector
+    @param vData       The grid of the v component's of the vector
+    @param srcGridSize The number of elements in the original grid
+    @param delta       The distance between grid points (e.g., 2.5 deg lon, 2.5 deg lat)
+    @param srcGrid     The internal representation of the u-v grid
+ 
+    srcgrid data both go from x,y coords to index as
+       index = x + stride * y
+    stride == the number of internal grid columns.
+       stride is >= the number of ideal columns
+       The extra columns on the right (or left) of the main one are duplicated, to ease the math
+ 
  */
 kernel void gridBuild(
                      __constant float* uData, __constant float* vData
                      // The number of source grid points W-E and N-S (e.g., 144 x 73)
-                     , uint2 gridSize
+                     , uint2 srcGridSize
                      , float2 delta
                      , bool isContinuous
                      , __global  float2* srcGrid
@@ -245,24 +259,26 @@ kernel void gridBuild(
 {
     // Get each work-items unique row
     int j = get_global_id(0);
-    int p = j * gridSize.x;
+    int p = j * srcGridSize.x;
+    
+    int stride = srcGridSize.x + (isContinuous?1:0);
     
     // Scan mode 0 assumed. Longitude increases from λ0, and latitude decreases from φ0.
     // http://www.nco.ncep.noaa.gov/pmb/docs/grib2/grib2_table3-4.shtml
     // Continuous srcGrids have an extra column
-    int rowOfs = (gridSize.x + (isContinuous?1:0)) * j;
+    int rowOfs =  stride * j;
     
     // HACK, I am shift the x origin by 180degrees; this assumes the origin, spacing, and size
-    for (int i = 0; i < gridSize.x; i++, p++)
+    for (int i = 0; i < srcGridSize.x; i++, p++)
     {
         // Note: because the latitude decreases, the direction of the y component is flipped
         // I fix it here
-        srcGrid[rowOfs + (i+180)%gridSize.x] = (float2)(uData[p], -vData[p]);
+        srcGrid[rowOfs + (i+180)%srcGridSize.x] = (float2)(uData[p], (j<360?-1:0)*vData[p]);
     }
     if (isContinuous)
     {
         // For wrapped grids, duplicate first column as last column to simplify interpolation logic
-        srcGrid[rowOfs + gridSize.x] = srcGrid[rowOfs];
+        srcGrid[rowOfs + srcGridSize.x] = srcGrid[rowOfs];
     }
 }
 
