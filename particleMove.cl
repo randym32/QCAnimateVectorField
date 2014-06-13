@@ -51,12 +51,14 @@ float2 particleRandomize(
                        __global ulong* seed
                        )
 {
-    float n = (random(seed, numYBins*10-1)/(numYBins*10.0f))*M_PI;
-    float c = cos(n);
-    float y = c*88.0f+91.0f;
-    y *= (numYBins-2.0)/180.0f;
-    float x =random(seed, (numXBins-1)*10)/10.0;
-    return (float2){x,y};
+    float m =random(seed, (numXBins*numYBins));
+    float yy=(int)(m/numXBins);
+    float xx = m - numXBins*yy;
+    
+    float c = (cos(M_PI*yy/numYBins)+1.0)*0.5;
+    c*=c;
+    
+    return (float2){xx,(numYBins-1)*(1.0-c)};
 }
 
 
@@ -111,28 +113,38 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
     
     // The left two are the key ones
     // Get the particle position
-    float2 position = vertex[idx2]+dT*(vertex[idx2+1]-vertex[idx2]);
+    float2 position = vertex[idx2];
+    float2 _v = vectorField[(int)position.x + ((int) position.y)*numXBins];
+    float2 v =_v*dT;
+    float2 origPosition = position;
+    position = position+v;
+
     float2 position_t;
     // This to handle wrap around on either edge as elegantly as possible
-    if (position.x <= 0.0)
+    if (position.x < 0.0 && v.x < 0.0)
     {
-        // We wrapped around
-        float2 p = vertex[idx2+1];
-
-        position.x = numXBins-0.01;
-        // We could calculate the actual y position but this works better for now
-        position.y = (position.y+p.y)*0.5;
+        // We wrapped around to the "east end of the world"
+        position.x = numXBins-0.1;
+        
+        // Sanity check the y coordinate (otherwise we can misindex)
+        if (position.y >= numYBins) position.y = numYBins-0.5;
+        else if (position.y < 0.0) position.y=0.0;
+        
+        position_t = position + v;
     }
-    else if (position.x >= numXBins-0.1)
+    else if (position.x > numXBins && v.x > 0.0)
     {
-        float2 p = vertex[idx2+1];
-        position.x = 0.0;
-        // We could calculate the actual y position but this works better for now
-        position.y = (position.y+p.y)*0.5;
+        // We wrapped around to the "west end of the world"
+        position.x =0.0;
+        position.y = 0.5*(position.y+origPosition.y);
+        // Sanity check the y coordinate (otherwise we can misindex)
+        if (position.y >= numYBins) position.y = numYBins-0.5;
+        else if (position.y < 0.0) position.y=0.0;
+        position_t = position + v;
     }
 
     // Did the particle go out of bounds?
-    if (position.y< 0.0 || position.y >= numYBins-1.0)
+    else if (position.y< 0.0 || position.y >= numYBins-1.0)
     {
         // The particle is moving too fast or too slow; get rid of it
         position_t = particleRandomize(numXBins, numYBins, seed);
@@ -141,12 +153,11 @@ __kernel void particleMove(  __global float2*   vertex    // position of each pa
     else
     {
         // vector at current position
-        float2 v = vectorField[(int)position.x + ((int) position.y)*numXBins];
-        float m = v.x*v.x + v.y*v.y;
+        float m = _v.x*_v.x + _v.y*_v.y;
 
         position_t = position + v;
-        
-        if (m <1.0)
+
+        if (m < 2.0)
         {
             // The particle is moving too fast or too slow; get rid of it
             position_t = particleRandomize(numXBins, numYBins, seed);
