@@ -36,7 +36,7 @@
 
 
 // How thick to make the lines
-#define LINE_WIDTH (2.5)
+#define LINE_WIDTH (2.0)
 
 /// The prefix that entries will appear in the log with
 #define LogPrefix @"BWAnimateVectorFieldPlugin: "
